@@ -1,6 +1,0 @@
-export CHERI=/home/sander/Repositories/github.com/CTSRD-CHERI
-export CHERI_SDK=/home/sander/Repositories/github.com/CTSRD-CHERI/output/sdk
-export CAP_SIZE=256
-export SAIL_DIR=/home/sander/Repositories/github.com/rems-project/sail
-export SAIL_CHERI_MIPS_DIR=/home/sander/Repositories/github.com/capt-hb/sail-cheri-mips
-export UNINIT_CAP=1
