@@ -1,0 +1,57 @@
+cheritest() {
+    make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/test_$1.py"
+}
+
+thesis_build() {
+    local command=$1
+
+    case $command in
+	all)
+	    echo "building mips, llvm and sdk"
+	    thesis_build "mips" && thesis_build "llvm" && thesis_build "sdk"
+	    if [ $? -eq 0 ]; then
+		echo "all builds done"
+	    else
+		echo "something went wrong..."
+	    fi
+	    ;;
+	mips)
+	    echo "building mips"
+	    make -C "$SAIL_CHERI_MIPS_DIR/cheri" cheri cheri_c
+	    ;;
+	llvm)
+	    local cwd=$PWD
+	    local llvm="$REPOSITORIES/github.com/capt-hb/llvm-project"
+	    echo "building llvm"
+	    cmake -S $llvm --build "$llvm/build"
+	    if [ $? -ne 0 ]; then
+		echo "retrying with ninja using 1 core"
+		cd "$llvm/build"
+		ninja -j 1
+		cd $cwd
+	    fi
+	    ;;
+	sdk)
+	    echo "building cheri sdk"
+	    $CHERI/cheribuild/cheribuild.py --source-root $CHERI --qemu/no-use-smbd sdk
+	    ;;
+	*)
+	    echo "supported commands are: all, mips, sdk, llvm"
+    esac
+}
+
+thesis() {
+    local subcommand=$1
+    local argument=$2
+
+    case $subcommand in
+	test)
+	    cheritest $2
+	    ;;
+	build)
+	    thesis_build $2
+	    ;;
+	*)
+	    echo "supported subcommands: test, build"
+    esac
+}

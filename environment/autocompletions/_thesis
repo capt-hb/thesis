@@ -1,0 +1,35 @@
+#compdef _thesis thesis
+
+function _thesis {
+    local line
+    local -a cmds=(test build)
+
+    _arguments -C "1:first arg:(test build)" \
+	       "*::arg:->args"
+
+    case $line[1] in
+	test)
+	    _thesis_test
+	    ;;
+	build)
+	    local -a subcmds=(all mips llvm sdk)
+	    _describe 'command' subcmds
+	    ;;
+    esac
+}
+
+function _thesis_test {
+    local prefix="test_"
+    local suffix=".py"
+    local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ -name '*.py' -printf "%f\n" | sort)
+    local -a testcmds
+    local tmp=""
+
+    while read line; do
+	tmp=${line#"$prefix"}
+	tmp=${tmp%"$suffix"}
+	testcmds+=$tmp
+    done <<< $files
+
+    _describe 'command' testcmds
+}

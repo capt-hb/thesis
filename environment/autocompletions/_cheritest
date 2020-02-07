@@ -1,0 +1,17 @@
+#compdef _cheritest cheritest
+
+function _cheritest {
+    local prefix="test_"
+    local suffix=".py"
+    local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ -name '*.py' -printf "%f\n" | sort)
+    local -a testcmds
+    local tmp=""
+
+    while read line; do
+    	  tmp=${line#"$prefix"}
+    	  tmp=${tmp%"$suffix"}
+    	  testcmds+=$tmp
+    done <<< $files
+
+    _describe 'command' testcmds
+}
