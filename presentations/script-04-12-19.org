@@ -1,0 +1,141 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:2 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:nil e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+TITLE: Secure Calling Convention in CLang/LLVM with Uninitialized Capabilities
+#+DATE: 04-12-19
+#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck
+#+EMAIL: sander.huyghebaert@vub.be
+#+DESCRIPTION: hello there
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+
+* Background
+** Capability Machines
+   - Principle of least privilege: capabilities should only be able to access 
+     and do what they require
+   - Principle of intentional use: where many priviliges are available to a piece of software,
+     the privilege to use should be explicitily named rather than implicitly selected
+   - Fine-grained compartmentalization: decomposition of software into smaller isolated 
+     compartments, only granted access to memory resources they actually require
+   - Additional metadata: permissions, range of authority (allows bounds checking, ...)
+     
+** CHERI
+   CHERI is a capability extension to instruction set architectures,
+   it has a hardware implementation for MIPS and the people working on CHERI
+   are busy mapping the CHERI protection model onto other instruction set architectures, 
+   namely RISC-V and x86-64.
+   
+   The CHERI implementation on MIPS, named CHERI-MIPS, adds several instructions for
+   supporting capabilities.
+
+   CHERI is backwards compatible, meaning it allows a hybrid capability mode where pointers
+   can still be used as well as capabilities, making it easier to transition into using
+   capabilities. It doesn't require that everything is adjusted to use capabilities instead of
+   pointers.
+
+   The software stack for CHERI includes adapted versions of the CLang/LLVM compiler,
+   FreeBSD and a QEMU CHERI-MIPS emulator.
+   
+** CHERI Capabilities
+   Capabilities in CHERI use tagged memory to know if a capability is still valid or not.
+   The tag isn't part of the capability itself and a capability with a cleared tag can
+   no longer be used for derefencing (load or store instrs).
+   
+   Guarded manipulation of capabilities ensures that when invalid capability manipulations or
+   invalid capability derefences result in an exception that can be handled by the supervisor
+   or language runtime.
+   
+   Capability monoticity means that new capabilities must be derived from existing capabilities
+   and only via valid manipulations that may only narrow the rights of the original capability.
+
+** Capabilities
+*** Implemented and Fully Supported
+    - Code Capabilities: Program Counter
+    - Data Capabilities: Data, local environment for code capability 
+    - Sealed Capabilities: Immutable and non-dereferencable.
+    - Global/Local Capabilities: global caps can be stored by any cap authorized for cap store.
+      Local caps can be stored only be caps authorized as store local.
+    
+*** Other Capabilities
+    - Linear Capabilities: capabilities that cannot be copied, only moved
+    - Indirect Capabilities: "Pointer to pointer to data", on load would 
+      load the cap that the cursor points to and use the offset on that cap
+      to load the data to the destination register
+    - Enter Capabilities: Immutable and non-dereferencable, but the bearer may jump to the
+      enter cap to begin executing its instructions
+
+* Motiviation
+** StkTokens: Secure Calling Convention
+   StkTokens uses local and linear capabilities to ensure well-bracketed control flow 
+   and local-state encapsulation.
+
+   Well-bracketed control flow means that invoked functions must either return to their
+   callers, invoke other functions themselves or diverge. In most programming languages
+   that don't offer a primitive form of continuations this is the case, but at the
+   assembly language however, this doesn't necessarily hold. Invoked functions
+   get a return pointer that they are supposed to jump back to at the end of their execution.
+   
+   Local-state encapsulation guarantees that when a function invokes another function,
+   its local variables (saved on its stack frame) will not be read or modified until the
+   invoked function returns. At the assembly level it is again not the case that this 
+   necessarily holds. Functions are not supposed to touch stack frames other than their owns,
+   but this requirement can be ignored.
+   
+   The problem with this secure calling convention is that linear capabilities are not that
+   trivial to implement on hardware. The calling convention requires the ability to split
+   a linear capability into 2, one for the caller's stack frame and one as the stack pointer
+   for the unused part of the stack that the callee can use. 
+   A split instruction would thus require to write to 2 registers, while in practice 
+   instructions only allow to write to 1 registers, but they can perform reads from
+   multiple registers.
+   
+   Stack clearing is necessary to prevent later retrieval of data stored on the stack.
+   (go to next slide, explains it more)
+
+** Stack Clearing Overhead
+   When trusted code calls some untrusted code, a stack frame will be added for the callee,
+   the callee can then store some secret on the stack and return to the caller.
+   The stack frame is not cleared, so whatever is on it, stays on it. If later on some
+   untrusted code gets access to that part of the stack where the secret is stored, it can
+   now read it.
+
+* Key Idea
+** Uninitialized Capabilities
+   This is where uninitialized capabilities come in. These capabilities would only allow
+   to read what the capability has written to. The stack clearing doesn't need to happen,
+   as no untrusted code would be able to read data from the stack without having written to
+   it first.
+   
+   Unlike linear capabilities, this kind of capability is easier to implement on hardware
+   because it doesn't have the requirement that it cannot be copied.
+   An unitialized capability for the unused part of the stack can be created by the caller
+   using exisiting instructions to manipulate capabilities.
+   
+** Workflow
+   The workflow for this thesis is to first extend the instructions of CHERI-MIPS
+   to support uninit caps, this happens in Sail, a programming language to describe 
+   instruction set architectures.
+   After that, the LLVM assembler needs to be extended to know about the added instructions.
+   Once this is complete, the instructions can be tested.
+   
+   Testing the instructions happens by writing assembly code which are then compiled to binaries.
+   These binaries are executed on the CHERI MIPS C emulator that is generated from the Sail code.
+   
+   Next, the CLang/LLVM compiler needs to be adjusted to implement the calling convention.
+
+   Then some test programs can be written which can later be used to analyze the 
+   security and performance of the calling convention.
+   
+** CHERI MIPS
+   - CUninit: an instruction to make a capability uninitialized
+   - CGetUninit: reads the uninit bit of a capability and stores it in a target register
+   - UCStore: a store instruction specifically for uninit caps, only allowing to store
+     between the base and cursor of an uninit cap.
+   - CLoad: needs to be modified to not allow reading above the cursor of uninit caps.  
+   - Cursor Modifications Instructions: the cursor of uninit caps should not be allowed
+     to be put higher.
+     

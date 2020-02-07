@@ -1,0 +1,115 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:2 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:nil e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+TITLE: Secure Calling Convention in CLang/LLVM with Uninitialized Capabilities
+#+DATE: 04-12-19
+#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck
+#+EMAIL: sander.huyghebaert@vub.be
+#+DESCRIPTION: First Presentation
+#+LATEX_CLASS: beamer
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+# No Navigation Symbols
+#+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
+
+* Background
+** Capability Machines
+   - Principle of least privilege
+   - Principle of intentional use
+   - Fine-grained compartmentalization
+   - Additional metadata (not just an integer)
+     
+** Capability Machines
+   #+CAPTION: Capability Concept
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/capability-concept.png]]
+   
+** CHERI
+    - Capability extension to Instruction Set Architectures
+    - Hardware implementation
+      + Capability instructions
+    - Backwards compatibility
+    - Software stack
+      + CLang/LLVM, CHERIBSD, QEMU Emulator
+	
+** CHERI Capabilities
+   #+CAPTION: CHERI 256bit Capability (source: CHERI ISA v7)
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/cap-256.png]]
+
+   - Tagged memory
+   - Capability Monoticity by Guarded manipulation
+
+** Capabilities
+*** Implemented and Fully Supported
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.45
+   :END:
+   - Code Capabilities
+   - Data Capabilities
+   - Sealed Capabilities
+   - Global/Local Capabilities
+   
+*** Other Capabilities
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.45
+   :END:
+   - Linear Capabilities
+   - Indirect Capabilities
+   - Enter Capabilities
+
+
+* Motivation
+** StkTokens: Secure Calling Convention
+   - Local & Linear Capabilities
+   - Well-bracketed control flow
+   - Local-state encapsulation
+
+   But...
+
+   - Hard to implement on hardware
+   - Stack clearing overhead
+     
+** Stack Clearing Overhead
+   #+ATTR_LATEX: :width 1\textwidth
+   [[../figures/stack-clearing-requirement.png]]
+	
+* Key Idea
+** Uninitialized Capabilities
+   #+CAPTION: Uninitialized Capability Concept
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/uninit-capability-concept.png]]
+
+** Workflow
+   #+ATTR_LATEX: :width 1\textwidth
+   [[../figures/thesis-workflow.png]]
+   
+** CHERI MIPS
+*** New Instructions
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.4
+   :BEAMER_opt: t
+   :END:
+   - CUninit
+   - CGetUninit
+   - UCStore
+
+*** Instruction Modifications
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.50
+   :BEAMER_opt: t
+   :END:
+   - CLoad
+   - Cursor Modification Instructions
+     + CSetOffset
+     + CIncOffset
+     + ...
+       
