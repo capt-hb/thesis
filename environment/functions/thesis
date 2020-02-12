@@ -23,7 +23,7 @@ thesis_build() {
 	    local cwd=$PWD
 	    local llvm="$REPOSITORIES/github.com/capt-hb/llvm-project"
 	    echo "building llvm"
-	    cmake -S $llvm --build "$llvm/build"
+	    cmake --build "$llvm/build" --target install
 	    if [ $? -ne 0 ]; then
 		echo "retrying with ninja using 1 core"
 		cd "$llvm/build"
