@@ -4,5 +4,3 @@ sources
 *.pdf
 *.tex
 c_files/.idea
-c_files/*.s
-c_files/*.ll
