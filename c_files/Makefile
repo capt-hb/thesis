@@ -7,3 +7,7 @@ CLANG=$(CHERI_SDK)/bin/clang
 
 %.ll: %.c
 	$(CLANG) -S -emit-llvm $< $(CFLAGS) -o $@
+
+clean:
+	rm *.s
+	rm *.ll
