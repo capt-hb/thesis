@@ -33,7 +33,9 @@ thesis_build() {
 	    ;;
 	sdk)
 	    echo "building cheri sdk"
-	    $CHERI/cheribuild/cheribuild.py --source-root $CHERI --qemu/no-use-smbd sdk
+	    # building sdk includes building cheribsd (which currently loops indefinitely on "making hierarchy")
+	    # $CHERI/cheribuild/cheribuild.py --source-root $CHERI --qemu/no-use-smbd sdk
+	    $CHERI/cheribuild/cheribuild.py --source-root $CHERI --qemu/no-use-smbd freestanding-sdk
 	    ;;
 	*)
 	    echo "supported commands are: all, mips, sdk, llvm"
