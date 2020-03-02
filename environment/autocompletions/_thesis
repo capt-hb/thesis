@@ -21,7 +21,10 @@ function _thesis {
 function _thesis_test {
     local prefix="test_"
     local suffix=".py"
-    local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ -name '*.py' -printf "%f\n" | sort)
+    local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ \
+		       -name '*.py' -printf "%f\n" | sort)
+    local purecap_files=$(find $CHERI/cheritest/tests/purecap/ \
+			       -name '*_calling_convention.py' -printf "%f\n" | sort)
     local -a testcmds
     local tmp=""
 
@@ -30,6 +33,12 @@ function _thesis_test {
 	tmp=${tmp%"$suffix"}
 	testcmds+=$tmp
     done <<< $files
+
+    while read line; do
+	tmp=${line#"$prefix"}
+	tmp=${tmp%"$suffix"}
+	testcmds+=$tmp
+    done <<< $purecap_files
 
     _describe 'command' testcmds
 }

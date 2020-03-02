@@ -1,5 +1,10 @@
 cheritest() {
-    make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/test_$1.py"
+    local test=$1
+    if [[ $test == *"purecap"* ]]; then
+	make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/test_$1.py"
+    else
+	make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/test_$1.py"
+    fi
 }
 
 thesis_build() {
