@@ -1,4 +1,4 @@
-#compdef _cheritest cheritest
+#compdef _thesis_test cheritest
 
 function _thesis_test {
     local prefix="test_"
