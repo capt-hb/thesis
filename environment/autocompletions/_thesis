@@ -24,7 +24,7 @@ function _thesis_test {
     local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ \
 		       -name '*.py' -printf "%f\n" | sort)
     local purecap_files=$(find $CHERI/cheritest/tests/purecap/ \
-			       -name '*_calling_convention.py' -printf "%f\n" | sort)
+			       -name '*calling_convention*.py' -printf "%f\n" | sort)
     local -a testcmds
     local tmp=""
 
