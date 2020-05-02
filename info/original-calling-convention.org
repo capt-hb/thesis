@@ -1,0 +1,39 @@
+* Original Calling Convention
+  Diagrams available for the /c_files/simple_call.c/ example.
+  Assembly instructions for which the stack has been altered are always shown in bold blue.
+  SP = Stack Capability for this document.
+
+** cherimips-orig-init-stack.drawio
+   The first instruction (cincoffset) places the cursor of the SP at the end of the stack frame.
+   The return register is spilled to the stack (later in the instructions the return register will
+   be overwritten so this is *necessary*).
+
+** cherimips-orig-pre-doSomething-stack.drawio
+   The yellow blocks represent capability registers and to which "part/block" of the stack
+   frame they give access to. On the stack, white blocks (with the zero, 0 or dash - mean
+   the actual zero value and the dash means nothing has been stored there yet).
+
+   The return value register $2 is also erased. Register $4 contains the first argument value,
+   which is 100. $c3 is spilled to the stack and register $2 is also spilled (the content of the
+   block on the frame denoted with $2 will also be zero, the $2 register was set to zero...)
+
+** cherimips-orig-doSomething-first-stack.drawio
+   A new stack frame is added for doSomething, and the first argument register ($4 = $a1) is spilled
+   to the stack in the location $c1 points to. The word on offset 0 from $c1 is then saved into
+   GPR $2 (first return value register).
+
+** cherimips-orig-doSomething-second-stack.drawio
+   The stack frame gets "popped" (cursor gets incremented) and a jump to the return register is made.
+
+** cherimips-orig-pre-doSomething-stack.drawio
+   The first instruction loads the capability saved earlier ($c3) into register $c1. The second 
+   instruction saves the content of the return register on 0($c1) and loads that value back into
+   $2 (the return value of doSomething is saved into a local var and then returned). The return
+   capability is restored.
+
+** cherimips-orig-pop-stack.drawio
+   Just as for doSomething, the stack frame gets popped.
+   
+** Notes
+   I've left the contens of the stack/capabilities in place even when they where not used anymore.
+   This shows that the content of the callee stack frame is still available for the caller.
