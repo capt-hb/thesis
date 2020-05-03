@@ -1,0 +1,87 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:t todo:t |:t
+#+TITLE: Secure Calling Convention with Uninitialized Capabilities
+#+DATE: 2019-2020
+#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck, Steven Keuchel
+#+EMAIL: sander.huyghebaert@vub.be
+#+SUBTITLE: Master Thesis
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+#+LATEX_HEADER: \usepackage{vub}
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{placeins}
+#+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
+#+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
+#+LATEX_CLASS_OPTIONS: [10pt]
+
+# TODO: title page in English AND Dutch
+
+\newpage
+
+# TODO: English Abstract AND Dutch Abstract
+* Abstract
+
+* Introduction
+  Introduce capability machines (more detail of these will be given in the background section, 
+  the need for secure calling conventions and why uninitialized capabilities can help achieve this.
+  Explain what has been achieved in the thesis (added instructions and manually rewritten example(s)
+  of the calling convention with uninit caps) and why uninit caps alone cannot make a secure calling
+  convention.
+  
+* Literature Review
+  Give relevant sources for capability machines and secure calling conventions (stktokens).
+  Show why the need for capability machines arose and explain that the CHERI is the currently
+  most mature capability machine available (with a hardware impl).
+  
+  Mention why capability machines have recently been "interesting/needed" again, show the research
+  been done in the regard of calling conventions and why there is no secure calling convention yet.
+  
+* Background
+  Thoroughly explain capability machines.
+  Explain the CHERI ISA and what CHERI-MIPS is.
+  Explain the StkTokens calling convention.
+  *QUESTION:* would it be necessary to explain CHERITest a bit and how it works? Or keep this
+  for in the section about cheritest? (2 chapters rely on this information)
+  
+* Unitialized Capabilities CHERI-MIPS ISA Extension
+  Mention the change made to the capability format (requiring new permission bit for caps).
+  Mention the modified instructions and why these modifications were necessary.
+  Mention the added instructions and why these are needed.
+  
+* LLVM  
+  Explain that the CHERI-team has a modified version of the LLVM compiler in which the MIPS
+  backend has been extended to CHERI-MIPS.
+
+** Assembler
+   Discuss the changes made to the assembler (added instructions, their intrinsics, ...)
+   
+** CLang
+   Mention the modifications foreseen to implement the calling convention with uninit caps.
+
+* CHERITest: Unit Testing Uninitialized Capabilities Instructions
+  Explain the tests written for the modified and added instructions, as well as what the results
+  of the tests are and what they mean.
+  
+* CHERITest: Modifying the Calling Convention
+  Explain the setup for these tests carefully, compiling C examples into CHERI-MIPS assembly.
+
+** Current Calling Convention
+   Show how the current calling convention works, a good starting point for this is the diagrams
+   created for the simple_call.s file.
+   
+** Calling Convention with Uninitialized Capabilities
+   Show the modifications made to the original calling convention, how these use uninit caps
+   and mention that both assembly programs maintain the original semantics of the C program.
+  
+* Conclusions
+  Mention that uninit caps have been successfully added to the CHERI-MIPS ISA and have been added
+  to the LLVM assembler too. Explain why the LLVM/CLang modifications have not been made but are
+  discussed and that these could be made in future work. Mention that, although uninit caps
+  can contribute to a secure calling convention, it does not make it secure by _just_ using uninit
+  caps.
