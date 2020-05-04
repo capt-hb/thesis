@@ -1,0 +1,64 @@
+* LLVM Modifications
+  This file lists the modifications required to implement a calling convention
+  using an uninitialized stack capability.
+  
+** Store Instruction
+   The new store instruction will need to be used instead of the old one
+   (/cs[bhwd]/ -> /ucs[bhwd]/, /csc/ -> /uscc/), either by only using the new store instruction
+   or only those that are used with a stack capability or a capability derived from the stack
+   capability.
+  
+** Calling a Function
+   The caller will need to save the current uninit stack cap before the call to another function.
+   The callee should use an uninit stack cap covering its stack frame and the unused part of the 
+   stack (i.e. shrinking the uninit stack cap before calling the function):
+   
+   # Stack Before
+   #+begin_comment
+   | Memory |
+   |  ....  |
+   |--------|--|
+   |        |  |
+   | Caller |  |-> Uninitialized Stack Capability the caller uses
+   |        |  |
+   |--------|  |
+   |        |  |
+   |        |  |
+   |        |  |
+   |        |  |
+   |        |  |
+   |  ....  |  |
+   #+end_comment
+    
+   # Stack After
+   #+begin_comment
+   | Memory |
+   |  ....  |
+   |--------|
+   |        |  
+   | Caller |  
+   |        |  
+   |--------|--|
+   |        |  |
+   | Callee |  |-> Uninitialized Stack Capability the callee uses
+   |        |  |
+   |--------|  |
+   |        |  |
+   |  ....  |  |
+   #+end_comment
+   
+   A possible option to implement this is by adding a new pseudo instruction to derive the new
+   stack capability and save the old one on the stack (replacing the JALR pseudo instruction by
+   a pseudo instruction that does the above and the jalr pseudo instruction).
+   (example is the cgetpccincoffset instrs (with the cap_table instrs above), this is also
+   implemented using a pseudo instructions because the instructions need to be written together
+   and have to happen after register allocation)
+   
+   Another option would be to modify the code in /MIPSISelLowering.cpp/, more specifically the
+   /LowerCall/ function, to add nodes to the DAG for saving the stack cap to the stack and modifying
+   the stack cap before jumping.
+  
+** MipsSEFrameLowering.cpp
+*** emitEpilogue
+    Before a callee returns to the caller, it should also clear its stack frame, this
+    prevents the caller from reading contents written in the stack frame of the callee.
