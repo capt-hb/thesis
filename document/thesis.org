@@ -16,13 +16,20 @@
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{color}
 #+LATEX_HEADER: \usepackage{placeins}
+#+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
 #+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
 #+LATEX_CLASS_OPTIONS: [10pt]
+#+LATEX_HEADER: \addbibresource{references.bib}
 
 # TODO: title page in English AND Dutch
 
 \newpage
+
+#+INCLUDE: ./chapters/literature-review.org
+
+\newpage
+
 
 # TODO: English Abstract AND Dutch Abstract
 * Abstract
@@ -33,7 +40,7 @@
   Explain what has been achieved in the thesis (added instructions and manually rewritten example(s)
   of the calling convention with uninit caps) and why uninit caps alone cannot make a secure calling
   convention.
-  
+
 * Literature Review
   Give relevant sources for capability machines and secure calling conventions (stktokens).
   Show why the need for capability machines arose and explain that the CHERI is the currently
@@ -45,6 +52,7 @@
 * Background
   Thoroughly explain capability machines.
   Explain the CHERI ISA and what CHERI-MIPS is.
+  Explain calling convention (cheri-mips cc, arg spilling, caller/callee save, alignments, ...).
   Explain the StkTokens calling convention.
   *QUESTION:* would it be necessary to explain CHERITest a bit and how it works? Or keep this
   for in the section about cheritest? (2 chapters rely on this information)
@@ -85,3 +93,5 @@
   discussed and that these could be made in future work. Mention that, although uninit caps
   can contribute to a secure calling convention, it does not make it secure by _just_ using uninit
   caps.
+
+\printbibliography
