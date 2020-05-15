@@ -1,6 +1,6 @@
 * Literature Review
   Capability machines are a special type of processor that offer /capabilities/, which can be 
-  described as pointers that carry authority. The first capability machines can be traced back to
+  described as unforgeable tokens that carry authority. The first capability machines can be traced back to
   1959 with the Rice University Computer. 
   Capability machines have seen active research interest for a few decades but became less active 
   after the Intel iAPX 432 from 1981.\parencite{levy2014capability}
@@ -27,8 +27,8 @@
   protection, highly scalable software compartmentalization and backwards compability. A prototype
   CHERI-MIPS processor has been developed and drafts/sketches have been made to add the CHERI ISA
   extension for the x86-64 ISA (CHERI-x86-64) and RISC-V ISA (CHERI-RISC-V). This capability machine
-  uses tagging to identify capabilities by having a tag for each word in primary memory. The software
-  stack of CHERI exists of a modified CLang/LLVM, CHERIBSD and QEmu emulator (as well as some ported
+  uses tagging to identify capabilities by having a tag for each capability-sized, capability-aligned word in 
+  primary memory. The software stack of CHERI exists of a modified CLang/LLVM, CHERIBSD and QEmu emulator (as well as some ported
   software like nginx, sqlite, ...) and the development of this software stack started in April 2014\parencite{watson2014capability}.
   CHERI offers a scalable software compartmentalization API by using a central trusted stack and 
   a stack for each created compartment\parencite{watson2015cheri}. One of the challenges of
