@@ -1,1 +1,62 @@
-* CHERI Calling Convention
+* CHERI-MIPS Calling Convention
+  This section describes the calling convention used in CHERI-MIPS (for the purecap ABI). 
+  It should be noted that the calling convention will be described without using the frame pointer.
+  The general-purpose register (GPR) are denoted as ~$<num>~ and capability registers as ~$c<num>~.
+  
+** Invoking A Function
+   Invoking a function happens by jumping to it, using the /CJALR/ (capability jump and link register),
+   which takes 2 operands, the capability register containing the capability to jump to and a 
+   capability register to link the return (which will be a capability for the current PC + 8).
+   
+   Before being able to invoke a function it is necessary to create a capability that points
+   to the code of the function we want to call.
+   The first thing to do is get a pc-relative address for the Global Offset Table (GOT), this
+   is done by using the following instruction sequence:
+   #+begin_src asm -n
+   lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
+   daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
+   cgetpccincoffset $c1, $1
+   #+end_src
+   
+   All that's left now is to create an entry point capability for the function we need:
+   #+begin_src asm -n
+   # replace function_symbol_name with the name of the function to jump to
+   clcbi $c12, %capcall20(function_symbol_name)($c1) 
+   #+end_src
+   
+   In CHERI-MIPS $c12 is used as the entry point capability and $c17 as the return point capability,
+   consequently jumping to a function will always look like ~cljar $c12, $c17~.
+
+** Argument Passing
+   # NOTE: the calling conv is CC_MipsN (cc_mipsn_fast starts with $c1, but the first cap arg
+   # is passed in $c3, see stack_growth.s)
+   The argument passing follows the MIPS calling convention rules, in which the first eight integer
+   arguments are passed in the registers $4-11. The first eight capability arguments are passed in 
+   registers $c3-10. All other arguments are passed on the stack.
+   
+** Returning From A Function
+   In order to return from a function a jump instruction is used with as operand a capability
+   to return to. For CHERI-MIPS this is the /CJR/ instruction (jump capability register) and
+   the capability to return to is in capability register 17 (/$c17/).
+   
+** Function Prologue
+   The function prologue describes what needs to happen at the beginning of a function.
+
+   The following steps describe the function prologue for CHERI-MIPS:
+   - Adjust the stack capability by decreasing the offset with the size of the stack frame
+     (i.e. push stack frame);
+   - Spill the callee saved registers onto the stack.
+
+   # see CSR_Cheri_Purecap in MipsCallingConv.td (with MipsRegisterInfo.td for more reg info)
+   # TODO: add double float FPU registers?
+   # NOTE: caller-saved registers are all registers except the callee saved ones
+   The callee saved registers are: /$16-23, $28, $30-31, $c17-26/.
+
+** Function Epilogue
+   The function epilogue describes what needs to happen at the end of a function.
+   The epilogue undoes the setup of the stack frame by the prologue:
+   - Increase the offset of the stack capability with the stack frame size (i.e. popping the
+     stack frame);
+   - Restoring the callee saved registers.
+
+
