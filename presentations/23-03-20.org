@@ -1,0 +1,196 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:2 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:nil e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+TITLE: Secure Calling Convention with Uninitialized Capabilities
+#+DATE: 04-12-19
+#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck
+#+EMAIL: sander.huyghebaert@vub.be
+#+DESCRIPTION: Second Thesis Presentation
+#+LATEX_CLASS: beamer
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{color}
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+# No Navigation Symbols
+#+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
+#+BEAMER_HEADER: \usetheme[coloredtitles]{vub}
+
+* Introduction
+** Pointers
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/pointer.png]]
+
+   # Mention "undefined behavior" in C spec for pointers
+   - No Bounds
+   - No Permissions
+     
+** Calling Convention with Pointers
+   #+CAPTION: Stack at some point of a program
+   #+ATTR_LATEX: :width 0.3\textwidth
+   [[../figures/pointer-secret-on-stack-1.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Stack after calling a function 
+   #+ATTR_LATEX: :width 0.6\textwidth
+   [[../figures/pointer-secret-on-stack-init.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Callee returns
+   #+ATTR_LATEX: :width 0.35\textwidth
+   [[../figures/pointer-secret-on-stack-1.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Caller invokes untrusted function
+   #+ATTR_LATEX: :width 0.35\textwidth
+   [[../figures/pointer-secret-on-stack-sp-secret.png]]
+
+** Capability
+   #+CAPTION: Capability for a region of memory
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/capability.png]]
+   
+   - Bounds
+   - Permissions
+   
+** CHERI
+   - Capability extension to Instruction Set Architectures
+   - Hardware implementation
+     + Capability instructions
+   - Backwards compatibility
+   - Software stack
+     + CLang/LLVM, CHERIBSD, QEMU Emulator
+
+* Stack
+** The Stack in MIPS
+   #+CAPTION: Stack in MIPS
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/mips-stack.png]]
+   
+** The Stack in CHERI-MIPS   
+   #+CAPTION: Stack in CHERI-MIPS
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/cheri-stack.png]]
+
+   Stack Capability gives access to entire stack
+   
+* Proposals
+** Calling Convention
+   - Well-bracketed control flow
+   - Local-state encapsulation
+
+** Linear Capabilities
+   # TODO: replace by WBCF and LSE?
+   - Cannot be duplicated
+   - StkTokens Calling Convention
+     + Split Linear Capability for caller stack frame & callee stack frame
+   - Hard to implement in hardware
+
+** Uninitialized Capabilities
+   #+CAPTION: Uninitialized Capabilities Concept
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/uninit-cap-concept-v2.png]]
+   
+* Secure Calling Convention
+** Uninitialized Stack Capability
+   #+CAPTION: Stack with Uninitialized Capability
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/cheri-uninit-stack.png]]
+
+** Secure Calling Convention
+   #+CAPTION: Stack at some point of a program
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/secret-on-stack-1.png]]
+
+** Secure Calling Convention
+   #+CAPTION: Stack after calling a function 
+   #+ATTR_LATEX: :width 0.6\textwidth
+   [[../figures/secret-on-stack-init.png]]
+
+** Secure Calling Convention
+   #+CAPTION: Callee returns
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/secret-on-stack-1.png]]
+
+** Secure Calling Convention
+   #+CAPTION: Caller invokes untrusted function
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/secret-on-stack-cursor-pre-secret.png]]
+
+** Secure Calling Convention
+   #+CAPTION: Untrusted Callee cannot read the secret stored earlier
+   #+ATTR_LATEX: :width 0.6\textwidth
+   [[../figures/secret-on-stack-cursor-post-secret.png]]
+
+* Work Done
+** Uninitialized Capability Instructions
+   Added to /CHERI-MIPS ISA/ and the /LLVM MIPS Target/
+*** New Instructions
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.4
+   :BEAMER_opt: t
+   :END:
+   - CUninit
+   - CGetUninit
+   - UCStore
+   - UCStoreCap
+
+*** Instruction Modifications
+   :PROPERTIES:
+   :BEAMER_env: block
+   :BEAMER_col: 0.50
+   :BEAMER_opt: t
+   :END:
+   - CLoad
+   - Cursor Modification Instructions
+     + CSetOffset
+     + CIncOffset
+     + ...
+       
+** Example: UCStore
+   #+ATTR_LATEX: :options basicstyle=\ttfamily\scriptsize,keywordstyle=\color{blue},morekeywords={function,clause,let},commentstyle=\color{gray}
+   #+begin_src C
+    function clause execute (UCStore(ct, rs, cb, offset, width)) =
+    {
+    ... // usual checks for capabilities, is it valid, sealed, ...
+    else
+    {
+	let size   = wordWidthBytes(width);
+	let (ign, newCap) = if offset == zeros(8) then { 
+	    // update cursor before writing if offset = 0
+	    let decr = to_bits(64, negate(size));
+	    incCapOffset(cb_val, decr);
+	} else {
+	    (true, cb_val);
+	};
+	... // calculate address to store the data
+	writeCapReg(ct, newCap); 
+	... // write the data on the address 
+	}
+    }
+   #+end_src
+
+** CHERITest
+   - Project to test instructions to be run on the CHERI-MIPS simulator.
+   - Unit Tests written for added instructions and modified instructions.
+
+** Testing Calling Convention
+   - C programs compiled to CHERI-MIPS assembly
+   - Tests setup to ensure new calling convention keeps the same semantics
+   
+* Remains to be Done
+** Workflow
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/thesis-cheri-pipeline.png]]
+
+* Evaluation
+** Evaluation 
+   - Instructions
+     # Mention that unit tests check that the properties of uninit caps cannot be violated (for the test cases, no actual prove has been written)
+     + Unit Tests 
+   - Calling Convention
+     + Compile set of programs with old and new calling convention
