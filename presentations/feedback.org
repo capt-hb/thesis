@@ -1,0 +1,35 @@
+* Feedback Presentation 23-03-20 (delayed to 20-04-20)
+** Timing
+   Presentation ended after 8m38s, which is considerably shorter compared to 
+   "practice presentations" (see practice times).
+   
+   Went over slides with figures way to fast, people did not have the time to actually look
+   at them.
+
+** Content
+   Given the extra time, spend it on explaining the fundamentals a bit more (not everyone
+   is busy with ISAs everyday).
+   
+   Also think about the broader applicability of uninitalized capabilities.
+   
+* Feedback From Thesis Meeting 
+  + Figures ^ Structure
+    
+** Timing
+   Create some extra content given the left over time. (expand on cap machines, ...)
+    
+** Content
+   Use the local caps calling convention described in Lau's paper instead of stktokens (more related
+   than stktokens).
+   
+   WBCF: explain this better, maybe with some figures.
+   Elaborate more on capability machines, the audience are computer scientists, not assembly/capability machines
+   experts.
+   
+   Try to improve the presentation by using more diagrams/figures. 
+   Also work on the alignment of slides (see slides about explaining calling conventions).
+   Give the audience time to view the figures (went to fast).
+   Try to slow down on some slides and make sure the entire picture is clear.
+
+   Improve details on done works:
+   - how does the new cc work? (relate to Lau's CC)
