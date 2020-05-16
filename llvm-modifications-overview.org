@@ -4,9 +4,11 @@
   
 ** Store Instruction
    The new store instruction will need to be used instead of the old one
-   (/cs[bhwd]/ -> /ucs[bhwd]/, /csc/ -> /uscc/), either by only using the new store instruction
+   (/cs[bhwd]/ -> /ucs[bhwd]/, /csc/ -> /ucsc/), either by only using the new store instruction
    or only those that are used with a stack capability or a capability derived from the stack
    capability.
+   
+   # TODO: discuss alternative options, risks, initial proposal? 
   
 ** Calling a Function
    The caller will need to save the current uninit stack cap before the call to another function.
@@ -47,6 +49,8 @@
    |  ....  |  |
    #+end_comment
    
+   # mention args in init vs uninit part
+   
    A possible option to implement this is by adding a new pseudo instruction to derive the new
    stack capability and save the old one on the stack (replacing the JALR pseudo instruction by
    a pseudo instruction that does the above and the jalr pseudo instruction).
@@ -62,3 +66,7 @@
 *** emitEpilogue
     Before a callee returns to the caller, it should also clear its stack frame, this
     prevents the caller from reading contents written in the stack frame of the callee.
+    # register clearing? callee/caller save registers? special instr for clearing multiple registers?
+    # paper about optimiz. of boundary crossing between differsn compartments
+
+ # Measures for Lau's ESOP18 CC?
