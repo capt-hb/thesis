@@ -1,1 +1,50 @@
 * Calling Convention Using Local Capabilities
+  The calling convention described in this section is the one defined by Skorstengaard et al.\parencite{skorstengaard2018reasoning}
+  It makes use of local capabilities, which are capabilities that can only be kept in registers except
+  for when you have a capability with the write-local permission. This requires that capabilities
+  have a new permission added, the *L* (Local) permission and the possible combinations for this
+  permission are *RWL* and *RWLX*.
+  
+  An important requirement for this calling convention is that the stack capability is a local
+  capability with the *RWLX* permission.
+  
+** Invoking A Function
+   The first thing to do is to save the used caller-saved registers on the stack.    
+
+   As a return capability for the callee we need to create an enter capability (a permissions that
+   cannot be used to read, write or execute and a capability with this permissions cannot be modified 
+   but they can be jumped to and when jumped to their permission becomes *RX*). To create this
+   enter capability we will store the restore instructions on the stack and after these instructions
+   our return capability and stack capability. 
+   We then create the local enter capability for the restore instructions, return and stack capability.
+   The restore instructions will restore the return and stack capability.
+   
+   Now we can also restrict the stack capability to only cover the unused part of the stack.
+   We need to clear this unused part because it may contain data and capabilities left there
+   by previously executed code. Any non-argument registers are also cleared.
+
+   After this setup is done a jump can be made to the function.
+   
+   When the callee returns using the given enter return capability it will execute the restore
+   instructions, after which we can remove the return and stack capability from the stack, as well
+   as the restore instructions. All that's left is to restore our caller-saved registers from the 
+   stack.
+
+** Argument Passing
+   The calling convention is similar to standard C calling conventions, so it is safe to assume
+   that much like other calling conventions the first $x$ arguments are passed in registers and
+   the remaining arguments are passed on the stack.
+   This part of the calling convention relies on the processor on which it is used. 
+
+** Returning From A Function
+   Before jumping to the return capability it is necessary to clear all non-return-value registers
+   and the stack frame of the function as well as the unused part of the stack (in case the function
+   called an adversary then the unused part of the stack may contain data and capabilities left there
+   by the adversary).
+   # TODO: mention what an adversary is in the introduction
+
+# No mention of function prologue/epilogue as this is on a theoretical machine?
+# ** Function Prologue
+
+# ** Function Epilogue
+   
