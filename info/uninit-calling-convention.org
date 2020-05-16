@@ -1,0 +1,79 @@
+* Uninit Calling Convention
+** Simple Call
+   See /test_purecap_uninit_calling_convention.s/
+   
+*** Before Invoking A Function
+    The following instructions setup the stack capability used by the callee:
+    #+begin_src asm
+    cmove $c18, $c11             # tmp: currently store this sp in a register before uninit
+    cgetbase $s0, $c11           # get base of current SP
+    cgetlen $s1, $c11            # get length of current SP
+    csetoffset $c11, $c11, $s1   # Set the offset of the SP to the end
+    csub $s2, $c11, $c18         # take the difference of the cursor of $c11 and $c18
+    sub $s3, $s1, $s2            # s3 will contain the new end for the SP
+    csetoffset $c11, $c11, $zero # set the offset to 0 (cursor = base)
+    csetbounds $c11, $c11, $s3   # limit the capability to the new end
+    csetoffset $c11, $c11, $s3   # set offset to be the end (cursor = end)
+    cuninit $c11, $c11           # uninitialize the capability
+    #+end_src
+
+    This sequence of instructions performs:
+    # Stack Before
+    #+begin_comment
+    | Memory |
+    |  ....  |
+    |--------|--|
+    |        |  |
+    | Caller |  |-> Stack Capability the caller uses
+    |        |  |
+    |--------|  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |  ....  |  |
+    #+end_comment
+    
+    # Stack After
+    #+begin_comment
+    | Memory |
+    |  ....  |
+    |--------|
+    |        |  
+    | Caller |  
+    |        |  
+    |--------|--|
+    |        |  |
+    | Callee |  |-> Uninitialized Stack Capability the callee uses
+    |        |  |
+    |--------|  |
+    |        |  |
+    |  ....  |  |
+    #+end_comment
+
+    While this works fine when we have a "normal" stack capability, the instructions will fail
+    if the stack capability is already uninitialized. The instruction that sets the cursor
+    to the base voilates the uninit cap (lowering cursor is NOT allowed as it would then be possible
+    to read everything without having written to it first).
+    There is currently no instruction that allows "shrinking" a stack capability, i.e. lower the
+    end of the range of authority. (this is possible for the base by using csetbounds)
+    I propose to add a new instruction:
+    
+    *CShrink(regno, regno, regno)*: cshrink $c11, $c11, $t0
+    Usage: the first 2 register arguments must be capability registers and the third operand
+    is a GPR that holds the delta to lower the end address with.
+    Restrictions:
+    - the new end cannot be lower than base
+    - the cursor must already be in the new [base, end - delta] range
+      
+    With this instruction the new instruction sequence to setup the stack capability for the callee
+    would look like:
+    #+begin_src asm
+    cmove $c18, $c11             # tmp: currently store this sp in a register before uninit
+    cgetlen $s0, $c11            # get length of current SP
+    cgetoffset $s1, $c11         # get current offset of SP (always points to last written to)
+    sub $s0, $s0, $s1            # calculate the delta to lower the end of the SP
+    cshrink $c11, $c11, $s0      # SP[base, end] becomes SP[base, end - delta]
+    cuninit $c11, $c11           # uninitialize the capability 
+    #+end_src
