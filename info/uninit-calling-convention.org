@@ -77,3 +77,11 @@
     cshrink $c11, $c11, $s0      # SP[base, end] becomes SP[base, end - delta]
     cuninit $c11, $c11           # uninitialize the capability 
     #+end_src
+    
+    An alternative implementation for this instruction would be to lower the end to the cursor (more on par with
+    modifying the bounds):
+    #+begin_src asm
+    cmove $c18, $c11             # tmp: currently store this sp in a register before uninit
+    cshrink $c11, $c11           # lowers end of c11 to the cursor: [base, end] => [base, cursor] (assumes cursor is at the boundary for the new stack frame)
+    cuninit $c11, $c11           # uninitialize the capability 
+    #+end_src
