@@ -24,8 +24,13 @@
    clcbi $c12, %capcall20(function_symbol_name)($c1) 
    #+end_src
    
+   Before we jump to the capability for the function we want to call, any caller-saved registers that
+   we use need to be pushed on the stack.
+   
    In CHERI-MIPS $c12 is used as the entry point capability and $c17 as the return point capability,
    consequently jumping to a function will always look like ~cljar $c12, $c17~.
+   
+   When the function returns we need to restore the caller-saved registers.
 
 ** Argument Passing
    # NOTE: the calling conv is CC_MipsN (cc_mipsn_fast starts with $c1, but the first cap arg
