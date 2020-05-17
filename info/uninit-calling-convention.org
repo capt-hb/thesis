@@ -85,3 +85,42 @@
     cshrink $c11, $c11           # lowers end of c11 to the cursor: [base, end] => [base, cursor] (assumes cursor is at the boundary for the new stack frame)
     cuninit $c11, $c11           # uninitialize the capability 
     #+end_src
+    
+    This handles both the stack situation depicted above (the stack capability of the caller
+    is not uninitialized) and the case when the stack capability is already uninitalized:
+
+    # Stack Before
+    #+begin_comment
+    | Memory |
+    |  ....  |
+    |--------|--|
+    |        |  |
+    | Caller |  |-> Uninitialized Stack Capability the caller uses
+    |        |  |
+    |--------|  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |        |  |
+    |  ....  |  |
+    #+end_comment
+    
+    # Stack After
+    #+begin_comment
+    | Memory |
+    |  ....  |
+    |--------|
+    |        |  
+    | Caller |  
+    |        |  
+    |--------|--|
+    |        |  |
+    | Callee |  |-> Uninitialized Stack Capability the callee uses
+    |        |  |
+    |--------|  |
+    |        |  |
+    |  ....  |  |
+    #+end_comment
+
+    This is the situation that would *fail* with the previous instruction sequence (without cshrink).
