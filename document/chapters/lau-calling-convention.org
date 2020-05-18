@@ -11,6 +11,7 @@
 ** Invoking A Function
    The first thing to do is to save the used caller-saved registers on the stack.    
 
+   # TODO: skorstengaard2018reasoning contains a nice figure for this, insert + cite!
    As a return capability for the callee we need to create an enter capability (a permissions that
    cannot be used to read, write or execute and a capability with this permissions cannot be modified 
    but they can be jumped to and when jumped to their permission becomes *RX*). To create this
@@ -37,14 +38,23 @@
    This part of the calling convention relies on the processor on which it is used. 
 
 ** Returning From A Function
-   Before jumping to the return capability it is necessary to clear all non-return-value registers
-   and the stack frame of the function as well as the unused part of the stack (in case the function
-   called an adversary then the unused part of the stack may contain data and capabilities left there
-   by the adversary).
+   Returning from a function happens by jumping to the return capability. This return capability
+   is an enter capability that will restore the stack and return capability for the caller and
+   continue by restoring caller-saved registers.
+
+** Function Prologue
+   # all non-argument registers are cleared, so nothing left to spill when jumping to a function?
+   # (return/stack cap are spilled as part of the "Invoking a Function" process)
+   This calling convention doesn't require a prologue. The necessary stack setup happens
+   by the caller.
+
+** Function Epilogue
+   The following steps should be taken before jumping to the return capability:
+   - clear the non-return value registers;
+   - clear the used part of the stack (spilled registers, local state from invoking other functions, ...);
+   - clear the unused part of the stack.
+     
+   The unused part of the stack needs to be cleared because if this function invoked adversary code
+   it could be possible that data has been stored in the unused part of the stack.
    # TODO: mention what an adversary is in the introduction
-
-# No mention of function prologue/epilogue as this is on a theoretical machine?
-# ** Function Prologue
-
-# ** Function Epilogue
    
