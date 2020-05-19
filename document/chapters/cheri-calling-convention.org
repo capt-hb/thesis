@@ -36,7 +36,8 @@
    In CHERI-MIPS $c12 is used as the entry point capability and $c17 as the return point capability,
    consequently jumping to a function will always look like ~cljar $c12, $c17~.
    
-   When the function returns we need to restore the caller-saved registers.
+   When the function returns we need to restore the caller-saved registers. The caller-save registers
+   are /$c11-16, $c25/.
 
 ** Argument Passing
    # NOTE: the calling conv is CC_MipsN (cc_mipsn_fast starts with $c1, but the first cap arg
@@ -61,7 +62,7 @@
    # see CSR_Cheri_Purecap in MipsCallingConv.td (with MipsRegisterInfo.td for more reg info)
    # TODO: add double float FPU registers?
    # NOTE: caller-saved registers are all registers except the callee saved ones
-   The callee saved registers are: /$16-23, $28, $30-31, $c17-26/.
+   The callee saved registers are: /$16-23, $28, $30-31, $c17-25/.
 
 ** Function Epilogue
    The function epilogue describes what needs to happen at the end of a function.
