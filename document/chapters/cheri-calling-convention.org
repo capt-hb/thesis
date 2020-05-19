@@ -1,7 +1,13 @@
 * CHERI-MIPS Calling Convention
-  This section describes the calling convention used in CHERI-MIPS (for the purecap ABI). 
+  This section describes the calling convention used in CHERI-MIPS (for the purecap ABI), which
+  is similar to the MIPS-N32/N64 calling convention\parencite{watson2019capability}. The CHERI ISAv7 
+  technical report mentions the capability register conventions used in the calling convention
+  in Section 4.11\parencite{watson2019capability}. The remaining information for the CHERI-MIPS 
+  calling convention can be found by consulting the MIPSPro\texttrademark{}  N32 ABI Handbook\parencite{pirocanac2002},
+  the MIPS Assembly Language Programmer's Guide\parencite{solmi1992} and the, for CHERI modified, 
+  LLVM compiler[fn:llvm] in the /MIPS/ backend.
   It should be noted that the calling convention will be described without using the frame pointer.
-  The general-purpose register (GPR) are denoted as ~$<num>~ and capability registers as ~$c<num>~.
+  The general-purpose registers (GPR) are denoted as ~$<num>~ and capability registers as ~$c<num>~.
   
 ** Invoking A Function
    Invoking a function happens by jumping to it, using the /CJALR/ (capability jump and link register),
@@ -64,4 +70,4 @@
      stack frame);
    - Restoring the callee saved registers.
 
-
+[fn:llvm] https://github.com/CTSRD-CHERI/llvm-project
