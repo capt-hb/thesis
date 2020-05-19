@@ -3,53 +3,61 @@
   described as unforgeable tokens that carry authority. The first capability machines can be traced back to
   1959 with the Rice University Computer. 
   Capability machines have seen active research interest for a few decades but became less active 
-  after the Intel iAPX 432 from 1981.\parencite{levy2014capability}
+  after the Intel iAPX 432 from 1981\parencite{levy2014capability}.
 
   Capabilities were originally formally defined by Van Horn and Dennis\parencite{dennis1966programming} and
-  after this formalization the term capability got more widely used.
-  An important addition to capability systems was the concept of sealing\parencite{redell1974naming}
+  after this formalization the term capability found more widespread use.
+  An important addition to capability systems was the concept of sealing\parencite{morris1973protection,redell1974naming}
   which makes it impossible to modify or use the capability without unsealing it first.
 
   In Fabry's paper of 1974\parencite{fabry1974capability} he compares capability addressing with
   segmented primary memory addressing and predicted that the use of tags to identify capabilities
   would dominate. 
   
-  The most recent capability machine, from 2014, is CHERI\parencite{watson2019capability}, which is
+  One of the most prominent recent capability machines, from 2014, is CHERI\parencite{watson2019capability}, which is
   an Instruction Set Architecture (ISA) extension. CHERI was strongly influenced by the M-Machine
   \parencite{carter1994hardware}, which uses tagged memory. The tagged memory implementation of
   CHERI itself is quite efficient with less than 5% overhead for most applications\parencite{joannou2017efficient}.
-  The team behind CHERI also uses a different systems engineering method, whereas traditionally
-  test-and-debug methods are used, CHERI opts for rigorous methods to develop a more 
+  The team behind CHERI also uses different systems engineering methods, the traditional methods
+  are used but the CHERI team is also using rigorous methods to develop a more
   security-enhanced processor and to write mechanized proofs that the intended security properties
-  of the capability machine hold.\parencite{nienhuis2019rigorous}
+  of the capability machine hold\parencite{nienhuis2019rigorous}.
 
-  CHERI aims to give fine-grained memory
+  CHERI aims to provide fine-grained memory
   protection, highly scalable software compartmentalization and backwards compability. A prototype
-  CHERI-MIPS processor has been developed and drafts/sketches have been made to add the CHERI ISA
+  CHERI-MIPS processor has been developed and proposals have been made to add the CHERI ISA
   extension for the x86-64 ISA (CHERI-x86-64) and RISC-V ISA (CHERI-RISC-V). This capability machine
   uses tagging to identify capabilities by having a tag for each capability-sized, capability-aligned word in 
-  primary memory. The software stack of CHERI exists of a modified CLang/LLVM, CHERIBSD and QEmu emulator (as well as some ported
+  primary memory. The software stack of CHERI consists of CLang/LLVM, CHERIBSD and a QEmu emulator (as well as some ported
   software like nginx, sqlite, ...) and the development of this software stack started in April 2014\parencite{watson2014capability}.
+  CHERI provides a 256-bit capability format and a compressed format, called CHERI concentrate \parencite{woodruff2019cheri},
+  which is the successor for the deprecated CHERI-128 and CHERI-64 compression schemes\parencite{watson2019capability}.
+  CHERI concentrate offers 128-bit and 64-bit capability formats.
+
   CHERI offers a scalable software compartmentalization API by using a central trusted stack and 
-  a stack for each created compartment\parencite{watson2015cheri}. One of the challenges of
-  scalable software compartmentalization is finding a way to automize the compartmentalization
-  of programs, with the most recent work for CHERI software compartmentalization automation 
-  by Tsampas et al.\parencite{tsampas2017towards}
-  CHERI provides a 256-bit capability format and a compressed format, called CHERI concentrate, which
-  offers 128-bit and 64-bit capability formats.\parencite{woodruff2019cheri}
+  a stack for each created compartment\parencite{watson2015cheri}. Having a stack for each compartment
+  is a considerable memory overhead and makes supporting higher-order settings more difficult
+  (i.e. closures, objects).
+  One of the challenges of scalable software compartmentalization is finding a way to automate the 
+  compartmentalization of programs, with recent work for CHERI software compartmentalization automation 
+  by Tsampas et al\parencite{tsampas2017towards}. 
   
   Capabilities can offer more security than normal pointers and they are being used in formal 
-  approaches for secure compilation.\parencite{patrignani2019formal}
-
-  Secure calling conventions for capability machines are being researched by Skorstengaard et al.
+  approaches for secure compilation\parencite{patrignani2019formal}.
+  Secure calling conventions for capability machines have been researched by Skorstengaard et al.
   and their first approach uses local capabilities similar to those of CHERI\parencite{skorstengaard2018reasoning},
   this calling convention uses a single stack instead of the compartmentalization available in CHERI.
-  A disadvantage of that calling convention is that it requires register clearing and stack clearing, 
+  A disadvantage of that calling convention is that it requires register clearing and clearing the entire stack, 
   which is a considerable overhead.
-  The register clearing requirement has been solved by a new instruction in CHERI, /CClearRegs/, 
-  which allows zeroing up to 16 registers in a single efficient operation\parencite{watson2016fast}.
-  A first proposal for the stack clearing requirement has been made by using linear capabilities,
-  capabilities that cannot be duplicated and would avoid the need of stack clearing\parencite{skorstengaard2019stktokens}.
+  CHERI does offer a more efficient instruction for clearing up to 16 registers, /CClearRegs/\parencite{watson2016fast},
+  it does not have a big enough impact to reduce the overhead of zeroing registers.
+  An alternative calling convention could avoid the requirement to clear the entire stack
+  by only requiring that the used stack frame must be cleared. This reduces the overhead of clearing
+  the stack and should be an an acceptable overhead. An adjustment to the calling convention using
+  local capabilities has been made to take this into account, this modified calling convention uses
+  linear capabilities, capabilities that cannot be duplicated and would avoid the need of clearing
+  the entire stack\parencite{skorstengaard2019stktokens}.
   Linear capabilities have not been added to CHERI as it is not trivial to implement them in hardware
   (see appendix D.10 in the CHERI ISA v7 technical report\parencite{watson2019capability}), which
   means that the stack clearing problem has remained unsolved.
+
