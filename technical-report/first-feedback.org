@@ -1,0 +1,198 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+TITLE: Uninitialized Capabilities
+#+DATE: 2019-2020
+#+AUTHOR: Sander Huyghebaert \linebreak Thomas Van Strydonck \linebreak Steven Keuchel \linebreak Prof. Dr. Dominique Devriese
+#+EMAIL: sander@ThinkPad
+#+SUBTITLE: Technical Report
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+#+LATEX_HEADER: \usepackage{vub}
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{placeins}
+#+LATEX_HEADER: \usepackage{biblatex}
+#+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
+#+LATEX_CLASS_OPTIONS: [10pt]
+#+LATEX_HEADER: \addbibresource{references.bib}
+
+\newpage
+
+* Introduction
+  
+    Voor je begint, denk ik dat je best uitlegt wat de bedoeling is van deze tekst.
+    Ik zou iets zeggen als "In this text, we propose a new extension of capability machines (such as CHERI)."
+    Dan heb je direct ook al duidelijk gemaakt of wat je voorstelt specifiek is voor CHERI, voor capability machines of voor willekeurige CPUs (ik zou pleiten voor het tweede).
+
+  Capability machines offer more security than the existing pointer model.
+
+    Best eerst nog vermelden dat capability machines een speciaal soort CPUs zijn.
+
+  Capabilities have permissions and bounds and can be sealed to make them immutable.
+
+    DOMI: dit is niet op elke capability machine zo, dus ik zou hier duidelijk maken dat je enkel praat over CHERI.
+    Je kan ook gewoon sealing niet vermelden omdat het toch niet echt ter zake doet.
+
+  Every capability also has a tag bit associated with it, indicating if it is still a valid capability or not.
+
+    Beetje raar geformuleerd: ik zou zeggen: "every *memory location* has a tag bit associated with it, indicating whether the value it contains is a capability or a regular data value.
+
+  These extensions in regard to pointers offer better security and can prevent adversaries from accessing memory or executing malicious code.
+
+    Dit is erg vaag: ik zou zeggen "Capabilities enable fine-grained control of the authority over memory that program components have.
+
+  To improve the current level of security, a permissions is needed to implement secure calling conventions in settings with a single trusted stack.
+  The current permissions allow either full read access and/or full write access within the entire bounds of a capability.
+  Our proposed solution is to implement a new kind of capability, named uninitialized capabilities. 
+  
+    Ik zou in dit document uninitialized capabilities voorstellen als iets meer algemeen, met de stack als slechts één mogelijke toepassing.
+    Je kan misschien de volgorde hier omdraaien: eerst iets zeggen als
+      "In this document, we propose a new type of capabilities, which represent the authority to access (read and write to) a block of memory but not view its initial contents.
+       We hope to apply this as part of a secure calling convention, but other applications may be possible too
+      "
+    Persoonlijk denk ik dat uninitialized capabilities ook andere potentieel nuttige toepassingen hebben.
+    Bijvoorbeeld wanneer het OS extra fysiek geheugen beschikbaar maakt aan een proces, dan moet ze momenteel dit geheugen volledig clearen.
+    Het lijkt niet zo vergezocht om deze clearing te vervangen door het uitdelen van een uninitialized capability.
+    Het voordeel zou dan kunnen zijn dat de runtime library van het proces deze clearing on-demand zou kunnen doen, naargelang er meer geheugen wordt gemallocd, in plaats van alles in één keer zoals nu door het OS.
+      
+
+* Uninitialized Capabilities in Hardware
+  The capability format needs to be modified to carry an /uninitialized/ bit, which indicates if the capability is uninitialized or not.
+
+    Kan je meer zeggen over deze "bit"? moet je het niet zien als een extra permissie zodat rw >= uninitialized >= w?
+    Is het toegelaten om de uninitialized bit aan te hebben maar de read-write bit uit en zo ja, wat betekenen dergelijke combinaties?
+    Misschien is het beter om de bespreking over de juiste bit-level voorstelling uit te stellen en hier gewoon te spreken over "We introduce a new type of uninitialized capabilities, which represent the authority to do x but not y."
+
+  There are a few modifications/additions that need to be made to the instruction set architecture to support uninitialized capabilities.
+  
+    Deze zin zou ik weglaten of naar beneden verplaatsen: best eerst vermelden wat uninit capabilities juist *zijn* vanop een hoog niveau voor je over de consequenties voor de instructieset begint.
+    
+    Hieronder begin je te spreken over base, cursor en end, maar je zegt eigenlijk nergens dat je uitleg specifiek is voor CHERI-achtige capabilities en dat die drie velden en wat ze in CHERI betekenen. 
+
+  Uninitialized capabilities should maintain the following properties:
+  - Loads using an unintialized capability are only permitted if $Addr \in [cursor, base + length]$;
+  - Writes are permitted as long as it is in the bounds of the capability (same behavior as with
+    normal capabilities), but writing on the cursor should decrement the cursor;
+  - The cursor can only be set higher than it originally was, it should not be possible to
+    place the cursor in the write-only region.
+    
+    Bovenstaande is nogal operationeel gespecifieerd ("als je dit doet gebeurt er dat"), en legt niet echt uit *waarom* de dingen zo werken.
+    Ik zou voorstellen om het hier uit te leggen in termen van wat *de bedoeling* van uninitialized capabilities juist is en welke authority ze voorstellen:
+    - het recht om te lezen en schrijven in (cursor, base+ length]
+    - het recht om te schrijven naar [end, cursor]
+    - als je schrijft naar cursor, dan schuift de grens op zodat je nu ook mag lezen van de zonet geschreven locatie.
+    Je legt dan best ook uit dat de combinatie van deze regels ervoor zorgt dat je eigenlijk rw-toegang krijgt tot heel [base,end], maar niet tot de initiele inhoud van [end,cursor) en dat je dit dus kan gebruiken om toegang te geven tot arrays die niet-geinitialiseerde data bevatten, zonder dat het nodig is om deze te clearen.
+
+
+  #+CAPTION: Uninitialized Capabilities Concept
+  #+ATTR_LATEX: :width 0.5\textwidth
+  [[../figures/uninit-cap-concept-v2.png]]
+  \FloatBarrier
+
+
+  Given that we added the uninitialized bit seperate from the permissions, we have also
+  added an instruction to set this bit:
+  
+    Bovenstaande zin is raar, omdat het een introductie lijkt te geven tot de lijst van wijzigingen hieronder maar enkel over de eerste praat.
+    Ik zou hier iets zeggen als "To implement these rules, we propose to add the following instructions to the ISA"
+  
+    *separate*
+    
+    Zou je hieronder niet vermelden wat voor argumenten de instructies juist nemen?
+
+  \bigskip
+  @@latex:\noindent@@
+  *Uninitialize a Capability* (CUninit): An instruction to make a capability uninitialized.
+  
+    Wat als de capability geen read-write permissie heeft?
+    Zou dit niet als een variant van CSetPerm kunnen?
+
+  \bigskip
+  @@latex:\noindent@@
+  *Uninitialized Store* (UCStore/UCStoreCap): These instructions are modified versions of their
+  not-uninitialized counterparts. Using these store instructions behaves similar to the normal
+  store instructions, except when the given offset is 0, in that case it will decrement the
+  cursor of the capability. The data of the source register will then be written on the address
+  using the decremented cursor. The uninitialized capability with the modified cursor will be written
+  to the given target capability register. This is the only way to decrement the cursor of
+  uninitialized capabilities.
+
+  \bigskip
+  @@latex:\noindent@@
+  The following changes to instructions need to be made to take uninitialized capabilities 
+  into account:
+  
+  \bigskip
+  @@latex:\noindent@@
+  *Load via Capability Register*: When load instructions use an uninitialized capability
+  they should never allow loads from addresses below the cursor.
+
+  \bigskip
+  @@latex:\noindent@@
+  *Set/Increment Offset*: Instructions that modifiy the cursor of the capability should not
+  
+    "of the capability": of an uninitialized capability  
+
+  allow it to be set lower than it originally was. The only way to lower the cursor should be by
+  using the uninitialized store instructions.
+  
+
+* Uninitialized Stack Capability
+  The main use case that we foresee for uninitialized capabilities is in a single trusted stack
+  setting. We will limit our discussion to this use case.
+
+    Je begint volgens mij hier best met te verwijzen naar de paper van Lau, uitleggen dat die een calling convention voorstelt op basis van local capabilities, die local stack frame encapsulation en well-bracketed control flow afdwingt bij een enkele gedeelde stack.
+    Je hoeft dan zelfs niet in detail uit te leggen hoe die werkt (bijvoorbeeld enkel vermelden dat die gebaseerd is op CHERI's local capabilities), maar je kan enkel vermelden dat uninitialized capabilities toelaten om het hele ongebruikte deel van de stack niet te clearen bij functie-oproepen.
+    In onderstaande uitleg maak je best meer duidelijk dat je nog steeds voorstelt om te werken met Lau's calling convention, maar dan *daarbovenop* de stack uninitialized maatk.
+    Wanneer je dan bijvoorbeeld zegt "Another important effect of using uninit stack capabilities is that no function ..." zou ik duidelijk maken dat je dit dus voorkomt met uninit caps *in plaats van met het clearen van de stack* zoals Lau voorstelde.
+    Volgens mij is het in dit rapport ook niet nodig om veel te zeggen over wat WBCF en LSE juist betekenen.
+
+  The stack capability will be uninitialized, preventing adversaries from reading
+  from the stack before overwriting the uninitialized data (this could be garbage but just as well
+  sensitive data):
+
+  #+CAPTION: Stack with Uninitialized Capability
+  #+ATTR_LATEX: :width 0.8\textwidth
+  [[../figures/cheri-uninit-stack.png]]
+  \FloatBarrier
+
+** Well Bracketed Control Flow
+   Uninitialized capabilities follow the principle of least privilege. Stack frames only get access
+   to their stack frame and not to the stack frame of their caller (or any other stack frame higher
+   up in the stack). When an untrusted function places a return pointer on the stack, no other
+   function will be able to read it, uninitialized capabilities require that the memory is first 
+   overwritten before it can be read. Another important effect of using uninitialized stack
+   capabilities it that no function is able to read the return pointer on the stack of some
+   higher stack frame.
+   
+   So when uninitialized capabilities are used for the stack capability, we can ensure
+   
+     Het woord "So" is hier raar, omdat deze zin geen direct gevolg is van bovenstaande uitleg, maar extra informatie geeft: er zouden in principe nog andere problemen kunnen zijn die ook nog moeten opgelost worden.
+   
+   well bracketed control flow:
+
+   #+begin_quote
+   Well-bracketed control flow expresses that invoked functions must either return to
+   their callers, invoke other functions themselves or diverge \parencite{stktokens}
+   #+end_quote
+   
+   The invoked functions can still invoke other functions or diverge (the uninitialized stack
+   capability gives them access to their own stack frame and the unused stack part) and they
+   cannot return to another point in the program.
+
+
+** Local State Encapsulation
+   Using uninitialized capabilities we can ensure local state encapsulation. Local state 
+   encapsulation ensures that a function will not modify or read the local state of its caller 
+   \parencite{stktokens}. 
+   When a function invokes another function, the unintialized capabilities length has to be shrunk
+   so that the callers stack frame is no longer in bounds. This prevents the callee from accessing
+   the local state of its caller.
+
+\newpage
+\printbibliography
