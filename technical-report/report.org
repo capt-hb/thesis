@@ -2,7 +2,7 @@
 #+OPTIONS: author:t broken-links:nil c:nil creator:nil
 #+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
 #+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
-#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+OPTIONS: timestamp:nil title:t toc:2 todo:t |:t
 #+TITLE: Uninitialized Capabilities
 #+DATE: 2019-2020
 #+AUTHOR: Sander Huyghebaert \linebreak Thomas Van Strydonck \linebreak Steven Keuchel \linebreak Prof. Dr. Dominique Devriese
@@ -23,110 +23,15 @@
 
 \newpage
 
-* Introduction
-  Capability machines offer more security than the existing pointer model. Capabilities
-  have permissions and bounds and can be sealed to make them immutable. Every capability
-  also has a tag bit associated with it, indicating if it is still a valid capability or not.
-  These extensions in regard to pointers offer better security and can prevent adversaries from
-  accessing memory or executing malicious code. To improve the current level of security, a 
-  permissions is needed to implement secure calling conventions in settings with a single
-  trusted stack. The current permissions allow either full read access and/or full write access
-  within the entire bounds of a capability. Our proposed solution is to implement a new kind of
-  capability, named uninitialized capabilities. 
+#+INCLUDE: "./chapters/introduction.org"
 
-* Uninitialized Capabilities in Hardware
-  The capability format needs to be modified to carry an /uninitialized/ bit, which indicates
-  if the capability is uninitialized or not. There are a few modifications/additions that need
-  to be made to the instruction set architecture to support uninitialized capabilities.
-  Uninitialized capabilities should maintain the following properties:
-  - Loads using an unintialized capability are only permitted if $Addr \in [cursor, base + length]$;
-  - Writes are permitted as long as it is in the bounds of the capability (same behavior as with
-    normal capabilities), but writing on the cursor should decrement the cursor;
-  - The cursor can only be set higher than it originally was, it should not be possible to
-    place the cursor in the write-only region.
+#+INCLUDE: "./chapters/capability-machines.org"
 
-  #+CAPTION: Uninitialized Capabilities Concept
-  #+ATTR_LATEX: :width 0.5\textwidth
-  [[../figures/uninit-cap-concept-v2.png]]
-  \FloatBarrier
+#+INCLUDE: "./chapters/uninitialized-capabilities.org"
 
+#+INCLUDE: "./chapters/uninitialized-stack-capability.org"
 
-  Given that we added the uninitialized bit seperate from the permissions, we have also
-  added an instruction to set this bit:
-
-  \bigskip
-  @@latex:\noindent@@
-  *Uninitialize a Capability* (CUninit): An instruction to make a capability uninitialized.
-
-  \bigskip
-  @@latex:\noindent@@
-  *Uninitialized Store* (UCStore/UCStoreCap): These instructions are modified versions of their
-  not-uninitialized counterparts. Using these store instructions behaves similar to the normal
-  store instructions, except when the given offset is 0, in that case it will decrement the
-  cursor of the capability. The data of the source register will then be written on the address
-  using the decremented cursor. The uninitialized capability with the modified cursor will be written
-  to the given target capability register. This is the only way to decrement the cursor of
-  uninitialized capabilities.
-
-  \bigskip
-  @@latex:\noindent@@
-  The following changes to instructions need to be made to take uninitialized capabilities 
-  into account:
-
-  \bigskip
-  @@latex:\noindent@@
-  *Load via Capability Register*: When load instructions use an uninitialized capability
-  they should never allow loads from addresses below the cursor.
-
-  \bigskip
-  @@latex:\noindent@@
-  *Set/Increment Offset*: Instructions that modifiy the cursor of the capability should not
-  allow it to be set lower than it originally was. The only way to lower the cursor should be by
-  using the uninitialized store instructions.
-  
-
-* Uninitialized Stack Capability
-  The main use case that we foresee for uninitialized capabilities is in a single trusted stack
-  setting. We will limit our discussion to this use case.
-
-  The stack capability will be uninitialized, preventing adversaries from reading
-  from the stack before overwriting the uninitialized data (this could be garbage but just as well
-  sensitive data):
-
-  #+CAPTION: Stack with Uninitialized Capability
-  #+ATTR_LATEX: :width 0.8\textwidth
-  [[../figures/cheri-uninit-stack.png]]
-  \FloatBarrier
-
-** Well Bracketed Control Flow
-   Uninitialized capabilities follow the principle of least privilege. Stack frames only get access
-   to their stack frame and not to the stack frame of their caller (or any other stack frame higher
-   up in the stack). When an untrusted function places a return pointer on the stack, no other
-   function will be able to read it, uninitialized capabilities require that the memory is first 
-   overwritten before it can be read. Another important effect of using uninitialized stack
-   capabilities it that no function is able to read the return pointer on the stack of some
-   higher stack frame.
-   
-   So when uninitialized capabilities are used for the stack capability, we can ensure
-   well bracketed control flow:
-
-   #+begin_quote
-   Well-bracketed control flow expresses that invoked functions must either return to
-   their callers, invoke other functions themselves or diverge \parencite{stktokens}
-   #+end_quote
-   
-   The invoked functions can still invoke other functions or diverge (the uninitialized stack
-   capability gives them access to their own stack frame and the unused stack part) and they
-   cannot return to another point in the program.
-
-
-** Local State Encapsulation
-   Using uninitialized capabilities we can ensure local state encapsulation. Local state 
-   encapsulation ensures that a function will not modify or read the local state of its caller 
-   \parencite{stktokens}. 
-   When a function invokes another function, the unintialized capabilities length has to be shrunk
-   so that the callers stack frame is no longer in bounds. This prevents the callee from accessing
-   the local state of its caller.
+#+INCLUDE: "./chapters/conclusion.org"
 
 \newpage
 \printbibliography

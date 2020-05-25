@@ -1,0 +1,8 @@
+* Conclusion
+  We have proposed a new permisson of capabilities, the *uninitialized* permisson. This permission
+  only allows reading those parts of memory denoted by the bounds of the capability to which it
+  has first written to. This prevents using the capability to read uninitialized data (be it garbage
+  or sensitive data). We also provided a brief discussion of how to implement this on the /CHERI/
+  capability machine. Finally we showed how uninitialized capabilities can contribute to
+  secure calling conventions.
+  
