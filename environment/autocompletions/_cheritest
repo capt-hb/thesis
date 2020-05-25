@@ -7,7 +7,7 @@ function _thesis_test {
 		       -name '*.py' -printf "%f\n" | sort)
     local purecap_files=$(find $CHERI/cheritest/tests/purecap/ \
 			       -regex '.*\(calling_convention\|cc\).*\.py' -printf "%f\n" | sort)
-    local -a testcmds
+    local -a testcmds=(all purecap)
     local tmp=""
 
     while read line; do

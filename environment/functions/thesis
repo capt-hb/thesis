@@ -1,9 +1,31 @@
 cheritest() {
     local test=$1
-    if [[ $test == *"purecap"* ]]; then
-	make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/test_$1.py"
+    if [[ $test == "all" ]]; then
+	local files=$(find $CHERI/cheritest/tests/uninitialized_capabilities/ \
+			-name '*.py' -printf "%f\n" | sort)
+	while read file; do
+	    make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/$file"
+	done <<< $files
+
+	local purecap_files=$(find $CHERI/cheritest/tests/purecap/ \
+				-regex '.*\(calling_convention\|cc\).*\.py' -printf "%f\n" | sort)
+	while read file; do
+	    make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/$file"
+	done <<< $purecap_files
+    elif [[ $test == "purecap" ]]; then
+	local purecap_files=$(find $CHERI/cheritest/tests/purecap/ \
+				-regex '.*\(calling_convention\|cc\).*\.py' -printf "%f\n" | sort)
+	while read file; do
+	    make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/$file"
+	done <<< $purecap_files
     else
-	make -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/test_$1.py"
+	for test in "$@"; do
+	    if [[ $test == *"purecap"* ]]; then
+		make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/test_$test.py"
+	    else
+		make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/uninitialized_capabilities/test_$test.py"
+	    fi
+	done
     fi
 }
 
@@ -53,7 +75,7 @@ thesis() {
 
     case $subcommand in
 	test)
-	    cheritest $2
+	    cheritest ${@:2}
 	    ;;
 	build)
 	    thesis_build $2
