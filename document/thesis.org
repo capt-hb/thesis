@@ -2,10 +2,10 @@
 #+OPTIONS: author:t broken-links:nil c:nil creator:nil
 #+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
 #+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
-#+OPTIONS: timestamp:nil title:t toc:t todo:t |:t
+#+OPTIONS: timestamp:nil title:t toc:2 todo:t |:t
 #+TITLE: Secure Calling Convention with Uninitialized Capabilities
 #+DATE: 2019-2020
-#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck, Steven Keuchel
+#+AUTHOR: Sander Huyghebaert 
 #+EMAIL: sander.huyghebaert@vub.be
 #+SUBTITLE: Master Thesis
 #+LANGUAGE: en
@@ -18,15 +18,13 @@
 #+LATEX_HEADER: \usepackage{placeins}
 #+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
+#+LATEX_HEADER: \promotors{Promotor: Prof. Dr. Dominique Devriese \\ Supervisor: Thomas Van Strydonck \\ Supervisor: Dr. Steven Keuchel}
 #+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
+#+LATEX_HEADER: \input{cheri-mips-asm.tex}
 #+LATEX_CLASS_OPTIONS: [10pt]
 #+LATEX_HEADER: \addbibresource{references.bib}
 
 # TODO: title page in English AND Dutch
-
-\newpage
-
-#+INCLUDE: ./chapters/literature-review.org
 
 \newpage
 
@@ -41,21 +39,9 @@
   of the calling convention with uninit caps) and why uninit caps alone cannot make a secure calling
   convention.
 
-* Literature Review
-  Give relevant sources for capability machines and secure calling conventions (stktokens).
-  Show why the need for capability machines arose and explain that the CHERI is the currently
-  most mature capability machine available (with a hardware impl).
-  
-  Mention why capability machines have recently been "interesting/needed" again, show the research
-  been done in the regard of calling conventions and why there is no secure calling convention yet.
-  
-* Background
-  Thoroughly explain capability machines.
-  Explain the CHERI ISA and what CHERI-MIPS is.
-  Explain calling convention (cheri-mips cc, arg spilling, caller/callee save, alignments, ...).
-  Explain the StkTokens calling convention.
-  *QUESTION:* would it be necessary to explain CHERITest a bit and how it works? Or keep this
-  for in the section about cheritest? (2 chapters rely on this information)
+#+INCLUDE: ./chapters/literature-review.org :minlevel 1
+
+#+INCLUDE: ./chapters/background.org :minlevel 1
   
 * Unitialized Capabilities CHERI-MIPS ISA Extension
   Mention the change made to the capability format (requiring new permission bit for caps).
