@@ -1,1 +1,52 @@
 * Secure Calling Convention 
+  # TODO: plan was to "port" local cap cc to cheri using sealed caps
+  #       Dominique proposed to already do this porting in the local cap cc?
+
+  # Laus calling convention is destijds geformuleerd in termen van een minimale capability machine die werkt met enter-capabilities.
+  # Dit zijn een soort capabilities die origineel komen van de M-Machine.
+  # Ze zijn een soort capabilities die onbruikbaar en onwijzigbaar zijn (zoals sealed capabilities op CHERI) en waar je essentieel niets mee kan doen behalve ernaar springen.
+  # Wanneer je ernaar springt, komt de enter-capability in het PC-register terecht en verandert zijn permissie van E (enter) naar RX.
+  # Eigenlijk werkt zo'n capability dus vrij gelijkaardig aan een paar van sealed capabilities.
+  # Alleen moet je er voor moet zorgen dat het data-deel en het code-deel van de capability vlak naast elkaar in het geheugen liggen en kan je vanuit zo'n enter capability aan je private data door pc-relative adressing, dus bijvoorbeeld iets laden uit het geheugen op locatie (pc - 8) of dergelijke.
+  # Op CHERI zijn die sealed capability pairs effectief de vervanger van de enter capabilities van de M-Machine.
+  # In bijlage een presentatie waarin ik die twee varianten ooit eens heb uitgelegd (zie de prentjes op slide 10).
+
+  # Dat betekent echter dat je Laus calling convention een beetje moet aanpassen aan de nieuwe context.
+  # Dit is specifiek belangrijk voor de return capability.
+  # Die moet eigenlijk twee dingen bevatten: de code die moet worden uitgevoerd als er gereturnd wordt en de oude stack-capability van de caller.
+  # Het was een beetje vervelend om die return capability voor te stellen als een enter capability: je kan niet gewoon rechtstreeks naar de return code wijzen, omdat je de juiste stack capability niet vlak naast die code kan zetten (omdat er wegens reentrancy meerdere return pointers met verschillende stack capabilities naar dezelfde code moeten kunnen wijzen).
+  # Dus moest er een extra stuk indirectie-code op de stack gealloceerd worden met de stack-capability vlak ernaast alsook de executable capability waar we echt naar willen terugspringen.
+  # Die indirectie-code doet dan niets anders dan de twee andere capabilities van de stack halen en ernaar springen.
+  # Die extra indirectie is vervelend en zorgt er ook voor dat we de stack-capability execute-permissie moesten geven, omdat we de stack willen gebruiken om die return capabilities te construeren.
+
+  # Als je sealed capability pairs hebt, zoals op CHERI, kan je dat alles een stuk cleaner doen.
+  # Je kan nu return capabilities maken als capability pairs waarbij het code-deel rechtstreeks naar de juiste code locatie wijst.
+  # Het code deel van de return capability kan dan gewoon direct de oude stack capability zijn.
+  # In de StkTokens paper hebben we wel gewerkt met sealed capability paren en daar werken return capabilities effectief zo (maar daar heb je dan ook weer lineariteit).
+  # Het enige vervelende is dat je ervoor moet zorgen dat je voor elke return locatie (een locatie in de code waarnaar je soms return pointers moet construeren) een unieke seal kan bekomen.
+  # Conceptueel moet het de taak van de runtime linker zijn om ervoor te zorgen dat er voor elke dergelijke locatie een unieke seal gealloceerd wordt.
+  # Je mag dus veronderstellen dat er ergens een seal capability (vb. vlak boven de GOT of zo) in het geheugen klaarstaat die je kan gebruiken om aangemaakte return capabilities te sealen bij een functie-oproep.
+
+  # Enfin, wat ik dus wil zeggen is dat het in jouw context logisch zou zijn om te werken met Laus ESOP18 calling convention, maar dan aangepast aan het gebruik van sealed capability pairs ipv enter-capabilities.
+  # Dat betekent:
+  # - stack capability is niet RWLX maar RWL
+  # - return capabilities worden geen enter-capabilities maar capability pairs:
+  #   * code part is de (pc + 8) capability die je zou verwachten
+  #   * data part is de caller's oude stack pointer
+  #   * beide zijn gesealed met een gemeenschappelijk seal dat uniek is voor deze return locatie
+  #   * het code deel mag desnoods global zijn, maar het data deel moet local zijn (dit kan ook niet anders vermits je het construeert op basis van de stack pointer)
+  # - je hoeft de return instructies dan ook niet te alloceren op de stack.
+
+  # Het is mij niet helemaal duidelijk of bovenstaande uitleg nodig is.
+  # Misschien was je al van plan om bovenstaande aanpassingen te maken in de aangepaste calling convention met uninitialized caps?
+  
+
+** Invoking A Function
+
+** Argument Passing
+   
+** Returning From A Function
+   
+** Function Prologue
+
+** Function Epilogue
