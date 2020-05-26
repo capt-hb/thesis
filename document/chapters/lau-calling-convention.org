@@ -24,7 +24,9 @@
    We need to clear this unused part because it may contain data and capabilities left there
    by previously executed code. Any non-argument registers are also cleared.
 
-   After this setup is done a jump can be made to the function.
+   After this setup is done a jump can be made to the function. A check is required if the 
+   jump is done using a function pointer (for example callbacks), to see if that function pointer 
+   is global (i.e. not local). If this check fails then the function invokation fails.
    
    When the callee returns using the given enter return capability it will execute the restore
    instructions, after which we can remove the return and stack capability from the stack, as well
@@ -45,8 +47,8 @@
 ** Function Prologue
    # all non-argument registers are cleared, so nothing left to spill when jumping to a function?
    # (return/stack cap are spilled as part of the "Invoking a Function" process)
-   This calling convention doesn't require a prologue. The necessary stack setup happens
-   by the caller.
+   The callee needs to check that the stack capability is *RWLX*. The necessary stack setup happens 
+   by the caller instead of by the callee.
 
 ** Function Epilogue
    The following steps should be taken before jumping to the return capability:
@@ -55,6 +57,9 @@
    - clear the unused part of the stack.
      
    The unused part of the stack needs to be cleared because if this function invoked adversary code
-   it could be possible that data has been stored in the unused part of the stack.
+   it could be possible that data has been stored in the unused part of the stack. This data could
+   be an old stack capability or return capability which could then be used later on, for example
+   to get access to a part of the stack it should not be able to access (in the case of storing an
+   old stack capability).
    # TODO: mention what an adversary is in the introduction
    
