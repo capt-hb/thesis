@@ -18,16 +18,17 @@
    to the code of the function we want to call.
    The first thing to do is get a pc-relative address for the Global Offset Table (GOT), this
    is done by using the following instruction sequence:
-   #+begin_src asm -n
+   #+ATTR_LATEX: :options frame=single
+   #+begin_src cherimips -n
    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
    daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
    cgetpccincoffset $c1, $1
    #+end_src
    
    All that's left now is to create an entry point capability for the function we need:
-   #+begin_src asm -n
-   # replace function_symbol_name with the name of the function to jump to
-   clcbi $c12, %capcall20(function_symbol_name)($c1) 
+   #+begin_src cherimips -n
+   # replace fn_symbol_name with the name of the function to jump to
+   clcbi $c12, %capcall20(fn_symbol_name)($c1) 
    #+end_src
    
    Before we jump to the capability for the function we want to call, any caller-saved registers that
