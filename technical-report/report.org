@@ -5,7 +5,7 @@
 #+OPTIONS: timestamp:nil title:t toc:2 todo:t |:t
 #+TITLE: Uninitialized Capabilities
 #+DATE: 2019-2020
-#+AUTHOR: Sander Huyghebaert \linebreak Thomas Van Strydonck \linebreak Steven Keuchel \linebreak Prof. Dr. Dominique Devriese
+#+AUTHOR: Sander Huyghebaert \linebreak Thomas Van Strydonck \linebreak Dr. Steven Keuchel \linebreak Prof. Dr. Dominique Devriese
 #+EMAIL: sander@ThinkPad
 #+SUBTITLE: Technical Report
 #+LANGUAGE: en

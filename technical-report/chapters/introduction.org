@@ -1,13 +1,13 @@
 * Introduction
-  This technical report describes a new extension to capability machines. Capabilty machines
+  This technical report describes a new extension to capability machines. Capability machines
   are a special type of processors that include better security primitives at the hardware level.
   In capability machines, every word has an associated tag bit that indicates whether
   the value it contains is a capability or a regular data value. Capabilities enable fine-grained
   control of the authority over memory that program components have. Conceptually, capabilities
   can be viewed as being an unforgeable token carrying authority over a resource.
   
-  CHERI\parencite{watson2019capability} is a recently developed capability machine that aims to provide
-  fine-grained memory protection, software compartmentalizatoin and backwards compatibility. While 
+  CHERI \parencite{watson2019capability} is a recently developed capability machine that aims to provide
+  fine-grained memory protection, software compartmentalization and backwards compatibility. While 
   our ideas are implemented on CHERI, they are not limited to it and should be applicable to other
   capability machines as well.
   

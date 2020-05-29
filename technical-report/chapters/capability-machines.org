@@ -1,27 +1,28 @@
 * Capability Machines
   Capability machines are a special type of processor that replaces pointers with capabilities.
   Conceptually, capabilities are tokens that carry authority to access memory or an object. When
-  capabilities are used to carry authority over objects they are called /object capabilities/. 
+  capabilities are used to carry authority over objects, software defined entities like 
+  closures, files, etc., they are referred to as /object capabilities/. 
   This technical report will focus on the use of capabilities with regards to accessing memory.
-  The permissions to access memory can be read only, read only and write to, execute, ... 
+  The permissions to access memory can be read only, read and write to, execute, ... 
   The idea of capabilities was first formally defined by Dennis and Van Horn \parencite{dennis1966programming} 
   and has been further explored in the decades after. 
 
   The first capability machine dates back from 1959 with the /Rice University Computer/ and the 
   development and research interest of capability machines slowed down significantly after the 
-  /iAPX 432/ from /Intel/ in 1981\parencite{levy2014capability}. 
-  But in 2014 the University of Cambridge developed a new 
+  /iAPX 432/ from /Intel/ in 1981 \parencite{levy2014capability}. 
+  In 2014, researchers of the University of Cambridge developed a new 
   capability machine: /CHERI/, on which we will provide an implementation of our contribution to
   capability machines.
   
-  It is important that capabilities cannot be forged, this would defeat the purpose of capabilities
-  if they can be forged with certain permissions, memory bounds, ... One of the solutions to
+  It is important that capabilities cannot be forged, as forging them with certain permissions, 
+  memory bounds, etc. would defeat their purpose. One of the solutions to
   ensure the unforgeability of capabilities is to provide specialized instructions to work
   with capabilities. Capabilities might however need to be stored in primary memory or
   secondary memory instead of just the registers on the processor and one of the most used 
-  techniques to ensure valid capabilities is the use of tagging\parencite{fabry1974capability}. 
+  techniques to ensure valid capabilities is the use of tagged memory \parencite{fabry1974capability}. 
   Every possible capability location will have a tag denoting if that location contains a capability 
-  or not. Capabilities for which the tag is not set cannot be used to derefence memory.
+  or not. Capabilities for which the tag is not set cannot be used to dereference memory.
 
   Some common permissions found on capability machines are:
   - *R*: read-only;
@@ -30,7 +31,7 @@
   - *RWX*: read-write-execute.
 
   For this technical report we will represent capabilities formally as a 4-tuple similar to the
-  representation used by Skorstengaard et al.\parencite{skorstengaard2018reasoning}, 
+  representation used by Skorstengaard et al. \parencite{skorstengaard2018reasoning}, 
   (/permissions/, /base/, /end/, /cursor/), this tuple contains the 
-  /permissions/ of the capability, the range to which these permissions apply /[base, end]/ and 
+  /permissions/ of the capability, the range to which these permissions apply $[base, end]$ and 
   a /cursor/ in that range. 
