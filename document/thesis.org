@@ -24,10 +24,7 @@
 #+LATEX_CLASS_OPTIONS: [10pt]
 #+LATEX_HEADER: \addbibresource{references.bib}
 
-# TODO: title page in English AND Dutch
-
 \newpage
-
 
 # TODO: English Abstract AND Dutch Abstract
 * Abstract
