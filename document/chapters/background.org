@@ -16,17 +16,17 @@
 
    The first capability machine dates back from 1959 with the /Rice University Computer/ and the 
    development and research interest of capability machines slowed down significantly after the 
-   /iAPX 432/ from /Intel/ in 1981\parencite{levy2014capability}. 
-   But in 2014, researchers of the University of Cambridge developed a new 
-   capability machine: /CHERI/, on which we will provide an implementation of our contribution to
-   capability machines.
+   /iAPX 432/ from /Intel/ in 1981 \parencite{levy2014capability}. 
+   In 2014, researchers of the University of Cambridge developed a new 
+   capability machine: /CHERI/, on which I will provide an implementation of the contribution of
+   this thesis to capability machines.
   
-   It is important that capabilities cannot be forged, this would defeat the purpose of capabilities
-   if they can be forged with certain permissions, memory bounds, ... One of the solutions to
+   It is important that capabilities cannot be forged, as forging them with certain permissions, 
+   memory bounds, etc. would defeat their purpose. One of the solutions to
    ensure the unforgeability of capabilities is to provide specialized instructions to work
    with capabilities. Capabilities might however need to be stored in primary memory or
    secondary memory instead of just the registers on the processor and one of the most used 
-   techniques to ensure valid capabilities is the use of tagged memory\parencite{fabry1974capability}. 
+   techniques to ensure valid capabilities is the use of tagged memory \parencite{fabry1974capability}. 
    Every possible capability location will have a tag denoting if that location contains a capability 
    or not. Capabilities for which the tag is not set cannot be used to dereference memory.
 
@@ -37,7 +37,7 @@
    - *RWX*: read-write-execute.
 
    Capabilities can be formally represented by a 4-tuple similar to the
-   representation used by Skorstengaard et al.\parencite{skorstengaard2018reasoning}, 
+   representation used by Skorstengaard et al. \parencite{skorstengaard2018reasoning}, 
    (/permissions/, /base/, /end/, /cursor/), this tuple contains the 
    /permissions/ of the capability, the range to which these permissions apply /[base, end]/ and 
    a /cursor/ in that range. 
@@ -45,7 +45,7 @@
    memory, whereas a pointer is just a number indicating a memory address with no restrictions,
    this means that capabilities require more bits than pointers.
    Furthermore, the semantics of the C programming language regarding pointers often specifies
-   /undefined/ behavior, for example when performing out-of-bounds pointer arithmetic\parencite{memarian2019exploring}.
+   /undefined/ behavior, for example when performing out-of-bounds pointer arithmetic \parencite{memarian2019exploring}.
    The behavior of capabilities is better defined as it can be deducted from the permissions and range
    of authority it has. If the cursor of the capabilities goes out-of-bounds then it cannot be used
    to dereference that address.
@@ -53,23 +53,23 @@
 ** CHERI 
    CHERI (\textbf{C}apability \textbf{H}ardware \textbf{E}nhanced \textbf{R}ISC \textbf{I}nstructions) 
    is an ISA extension that introduces capabilities. The main goals of CHERI are 
-   fine-grained memory protection, software compartmentalization and backwards compatibility\parencite{watson2019capability}.
+   fine-grained memory protection, software compartmentalization and backwards compatibility \parencite{watson2019capability}.
    
-   The CHERI ISA extension proposes a 64-bit, 128-bit and 256-bit capability representation format\parencite{watson2019capability}, 
+   The CHERI ISA extension proposes a 64-bit, 128-bit and 256-bit capability representation format \parencite{watson2019capability}, 
    this thesis will focus on the 256-bit capability format but the ideas and concepts represented
    in the thesis should be applicable to the other capability formats as well.
    
-   In the following figure we see the current 256-bit capability format:
+   Figure \ref{fig:uninit-cap-concept} shows the current 256-bit capability format.
 
    #+CAPTION: 256-bit Capability Representation Format
    #+ATTR_LATEX: :width 0.8\textwidth
-   #+NAME: fig-uninit-cap-concept
+   #+NAME: fig:uninit-cap-concept
    [[../../figures/original-cap-representation.png]]
    \FloatBarrier
    
-   The important fields of a capability for our proposal are the permissions, cursor, base and
-   length fields. In our formal representation of capabilities we have an /end/ field instead of
-   /length/ but it should be straightforward to see that $end = base + length$.
+   The important fields of a capability used throughout the thesis are the permissions, cursor, base and
+   length fields. In our formal representation of capabilities we have an $end$ field instead of
+   $length$ but it should be straightforward to see that $end = base + length$.
    
    The CHERI ISA extension is implemented for the MIPS ISA (CHERI-MIPS) and has a functional
    hardware implementation. 
@@ -81,7 +81,7 @@
 
    \bigskip
    
-   A calling convention is a set of guidelines for\parencite{solmi1992}: 
+   A calling convention is a set of guidelines for \parencite{solmi1992}: 
    - how to use the registers available on a processor;
      + how many arguments are passed in registers and which registers are used for the arguments;
      + in which register(s) the return value(s) will reside;
