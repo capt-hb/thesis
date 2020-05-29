@@ -14,7 +14,7 @@
   Formally, uninitialized capabilities grant the following authority:
   - permission to read in $[cursor, end]$;
   - permission to write in $[base, end]$;
-  - when writing on the cursor, the cursor will be decremented so that the holder of the 
+  - when writing immediately below the cursor, the cursor will be decremented so that the holder of the 
     uninitialized capability is able to read from the location it has just written to.
    
   Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
