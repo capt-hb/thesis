@@ -1,9 +1,9 @@
 * Uninitialized Capabilities
-  Uninitialized capabilities are a new type of capabilities, which represent the authority to
-  only read those parts of memory to which has been written first using the uninitialized
-  capability. This type of capability requires a new permission to be added to capabilities 
-  (*U*: uninitialized) and prevents the holder of the capability from reading memory that was not 
-  initialized. Figure \ref{fig:uninit-cap-concept} clarifies this concept a bit more.
+  Uninitialized capabilities are a new type of capabilities.
+  They are memory capabilities which represent read-write authority to a range of memory, except that they do not allow reading the initial contents of the memory.
+  The memory first needs to be overwritten before it can be read.
+  This type of capability requires a new permission to be added to capabilities (*U*: uninitialized) and prevents the holder of the capability from reading memory that they have not first initialized.
+  Figure \ref{fig:uninit-cap-concept} clarifies this concept a bit more.
 
   #+CAPTION: Uninitialized Capabilities Concept
   #+ATTR_LATEX: :width 0.5\textwidth
@@ -17,8 +17,8 @@
   - when writing on the cursor, the cursor will be decremented so that the holder of the 
     uninitialized capability is able to read from the location it has just written to.
    
-  Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
-  data without the need of clearing that uninitialized data.
+  Uninitialized capabilities can thus be used to give access to arrays that contain uninitialized 
+  data without the need for clearing that uninitialized data first.
   
   The full set of permissions becomes:
   - *R*: read-only;
@@ -31,12 +31,14 @@
   Executing an uninitialized capabilities would require
   incrementing the program counter (and thus the cursor of the uninitialized capability),
   which means that the non-readable range of the capability would grow.
+  
   Another option is to allow the combination of the *U* permission with the *X* permission, 
   but when jumping to an uninitialized capability transform it into a normal capability for
-  the range $[cursor, end]$ before placing it in the program counter register.
+  the range $[cursor, end]$ before placing it in the program counter capability register.
 
-  We provide a concrete implementation of uninitialized capabilities for the /CHERI/ capability 
-  machine.
+  We propose a concrete design of uninitialized capabilities for the /CHERI/ capability machine, particularly the CHERI-MIPS ISA.
+  However, the general concept is not limited to CHERI-MIPS.
+  We see the concept of uninitialized capabilities as an addition to capability machines in general, and particularly the CHERI protection model, regardless of the architecture it is run on.
 
 ** CHERI
    CHERI (\textbf{C}apability \textbf{H}ardware \textbf{E}nhanced \textbf{R}ISC \textbf{I}nstructions) 
@@ -44,7 +46,7 @@
    fine-grained memory protection, software compartmentalization and backwards compatibility \parencite{watson2019capability}.
    
    The CHERI ISA extension proposes a 64-bit, 128-bit and 256-bit capability representation format \parencite{watson2019capability}, 
-   we have implemented our ideas for the 256-bit capability format but it should be possible to 
+   we instantiate our ideas for the 256-bit capability format but it should be possible to 
    add the uninitialized permission bit to other formats as well.
    
    In Figure \ref{fig:cap-256} we see the current 256-bit capability format:
@@ -59,15 +61,12 @@
    length fields. In our formal representation of capabilities we have an /end/ field instead of
    /length/ but it should be straightforward to see that $end = base + length$.
    
-   The CHERI ISA extension is implemented for the MIPS ISA (CHERI-MIPS) and has a functional
-   hardware implementation. Our proposals to instruction modifications/additions have been
-   implemented for CHERI-MIPS in software (using a simulator) but are not limited to CHERI-MIPS.
-   We see the concept of uninitialized capabilities as an addition to the CHERI protection model,
-   regardless of the architecture it is run on.
+   In the next section, we instantiate uninitialized capabilities as a set of modifications/additions to the CHERI-MIPS ISA.
+   We have implemented these for CHERI-MIPS in software (using a simulator).
 
 ** Uninitialized Capabilities Implementation
 *** Uninitialized Permission Bit
-    The first modification that needed to be made to CHERI capabilities is the addition of a new
+    The first modification that needs to be made to CHERI capabilities is the addition of a new
     permission, the uninitialized permission. In the 256-bit capability format there are a few 
     unused bits (padding bits) available so we have opted to use one of those bits for the 
     uninitialized permission, as can be seen in Figure \ref{fig:uninit-cap-rep}.
@@ -85,29 +84,31 @@
     \bigskip
     @@latex:\noindent@@
     *Load via Capability Register (CL[BHWD][U]/CLC)*: When load instructions are given a capability
-    with the uninitialized permission set, it should not be allowed to load from an address lower
+    with the uninitialized permission set, it is not allowed to load from an address lower
     than the cursor.
 
     \bigskip
     @@latex:\noindent@@
     *Set/Increment Offset (CIncOffset/CGetOffset/CIncOffsetImmediate)*: Instructions that modify 
-    the cursor of an uninitialized capability should not allow it be set lower than it originally 
-    was. The only way of lowering the cursor should be by using the uninitialized store instructions.
+    the cursor of an uninitialized capability are not allowed to set the cursor lower than it originally 
+    was. The only way to lower the cursor is by using the uninitialized store instructions.
 
 *** New Instructions
     We propose new instructions for the implementation of uninitialized capabilities:
 
     \bigskip
     @@latex:\noindent@@
-    *Uninitialized a Capability (CUninit)*: An instruction to make a capability uninitialized.
+    *Uninitialize a Capability (CUninit)*: An instruction to make a capability uninitialized.
     This instruction takes a source capability register and a destination capability register that
     will contain the capability from the source register but with the uninitialized permission set.
+    An error will be generated if the original capability did not have read-write authority.
 
     \bigskip
     @@latex:\noindent@@
     *Uninitialized Store (UCS[BHWD]/UCSC)*: These instructions are modified versions of their
-    not-uninitialized counterparts (CS[BHWD], CSC). Using these store instructions behaves similar to the normal
-    store instructions, except when the given offset is $-1$. In that case, the capability
+    not-uninitialized counterparts (CS[BHWD], CSC).
+    They behave similarly to the normal store instructions, except when the given offset is $-1$ and the capability used for the store is uninitialized.
+    In that case, the capability
     written to the destination capability register will have the cursor of the source capability 
     decremented by the number of bytes written (i.e. 1 for a byte, 2 for a half word, 4 for a word,
     8 for a double word and 32 for capabilities when using the 256-bit capability format). 
@@ -129,7 +130,7 @@
     \bigskip
     @@latex:\noindent@@
     *Shrink a Capability (CShrink[Immediate])*: CShrink is an instruction with 3 parameters, the destination
-    capability register, the source capability register and a general-purpose register (GPR) ,or alternatively
+    capability register, the source capability register and a general-purpose register (GPR), or alternatively
     an unsigned immediate for CShrinkImmediate. The capability from the source register will be 
     modified by setting $end = cursor$ and $base = value\ in\ GPR$ for CShrink. For CShrinkImmediate
     $end = cursor$ and $base = base + immediate$. CShrink[Immediate] will raise an exception if the

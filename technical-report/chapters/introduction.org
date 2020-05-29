@@ -12,5 +12,5 @@
   capability machines as well.
   
   In this technical report we propose a new type of capabilities, which represent the authority to 
-  access (read and write to) a block of memory but not view its initial contents. Our aim is to 
+  access (read and write to) a block of memory but not view its initial contents. Our main goal is to 
   use this new type of capability as part of a secure calling convention, but other applications may be possible too.

@@ -1,9 +1,8 @@
 * Capability Machines
   Capability machines are a special type of processor that replaces pointers with capabilities.
   Conceptually, capabilities are tokens that carry authority to access memory or an object. When
-  capabilities are used to carry authority over objects, software defined entities like 
-  closures, files, etc., they are referred to as /object capabilities/. 
-  This technical report will focus on the use of capabilities with regards to accessing memory.
+  capabilities represent software defined authority like invoking objects or closures, they are referred to as /object capabilities/. 
+  This technical report will focus on primitive capabilities for accessing memory.
   The permissions to access memory can be read only, read and write to, execute, ... 
   The idea of capabilities was first formally defined by Dennis and Van Horn \parencite{dennis1966programming} 
   and has been further explored in the decades after. 
