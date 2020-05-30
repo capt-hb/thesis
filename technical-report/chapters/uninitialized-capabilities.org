@@ -89,7 +89,7 @@
 
     \bigskip
     @@latex:\noindent@@
-    *Set/Increment Offset Or Address (CSetOffset/CIncOffset/CIncOffsetImmediate/CSetAddr/CAndAddr)*: Instructions that modify 
+    *Set/Increment Offset Or Address (CSetOffset/CIncOffset/CIncOffsetImm/CSetAddr/CAndAddr)*: Instructions that modify 
     the cursor of an uninitialized capability are not allowed to set the cursor lower than it originally 
     was. The only way to lower the cursor is by using the uninitialized store instructions.
 
@@ -129,11 +129,11 @@
 
     \bigskip
     @@latex:\noindent@@
-    *Shrink a Capability (CShrink[Immediate])*: CShrink is an instruction with 3 parameters, the destination
+    *Shrink a Capability (CShrink[Imm])*: CShrink is an instruction with 3 parameters, the destination
     capability register, the source capability register and a general-purpose register (GPR), or alternatively
-    an unsigned immediate for CShrinkImmediate. The capability from the source register will be 
-    modified by setting $end = cursor$ and $base = value\ in\ GPR$ for CShrink. For CShrinkImmediate
-    $end = cursor$ and $base = base + immediate$. CShrink[Immediate] will raise an exception if the
+    an unsigned immediate for CShrinkImm. The capability from the source register will be 
+    modified by setting $end = cursor$ and $base = value\ in\ GPR$ for CShrink. For CShrinkImm
+    $end = cursor$ and $base = base + immediate$. CShrink[Imm] will raise an exception if the
     $end < cursor$ (the original $end$ and $cursor$ of the capability) or if $newBase < base$, 
     these conditions prevent expanding the range of authority of the capability.
     
