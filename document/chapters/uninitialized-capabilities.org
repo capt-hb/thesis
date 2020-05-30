@@ -1,0 +1,476 @@
+* Uninitialized Capabilities
+  Uninitialized capabilities are a new type of capabilities, which represent the authority to 
+  only read those parts of memory to which has been written first using the uninitialized capability.
+  This type of capability requires a new pmerission to be added to capabilities 
+  (*U*: uninitialized) and prevents the holder of the capability from reading memory that was not
+  initialized. Figure \ref{fig:uninit-cap-concept} clarifies this concept a bit more.
+
+  #+CAPTION: Uninitialized Capabilities Concept
+  #+ATTR_LATEX: :width 0.5\textwidth
+  #+NAME: fig:uninit-cap-concept
+  [[../../figures/uninit-cap-concept-v2.png]]
+  \FloatBarrier
+
+  Formally, uninitialized capabilities grant the following authority:
+  - permission to read in $[cursor, end]$;
+  - permission to write in $[base, end]$;
+  - when writing immediately below the cursor, the cursor will be decremented so that the holder of the 
+    uninitialized capability is able to read from the location it has just written to.
+
+  Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
+  data without the need of clearing that uninitialized data.
+
+  The full set of permissions becomes:
+  - *R*: read-only;
+  - *RW*: read-write;
+  - *RX*: read-execute;
+  - *RWX*: read-write-execute.
+  - *U*: read between $[cursor, end]$, write between $[base, end]$;
+
+  Combinations of the *U* permission and *X* permission are invalid, executing an uninitialized 
+  capabilities would require incrementing the program counter (and thus the cursor of the 
+  uninitialized capability), which means that the non-readable range of the capability would grow.
+  Another option is to allow the combination of the *U* permission with the *X* permission, 
+  but when jumping to an uninitialized capability transform it into a normal capability for
+  the range $[cursor, end]$ before placing it in the program counter register.
+
+** Implementation Overview
+   This section will explain the implementation of uninitialized capabilities for the CHERI-MIPS
+   ISA using the 256-bit capability format. The implementation is not limited to CHERI-MIPS and
+   the 256-bit capability format and should be possible for other ISAs and different capability
+   formats. The concept of uninitialized capabilities is an addition to the CHERI protection model,
+   regardless of the architecture it is run on.
+
+*** Uninitialized Permission Bit
+    The first modification that needed to be made to CHERI capabilities is the addition of a new
+    permission, the uninitialized permission. In the 256-bit capability format there are a few 
+    unused bits (padding bits) available so one of those bits is now used for the 
+    uninitialized permission, as can be seen in Figure \ref{fig:uninit-cap-rep}.
+
+    #+CAPTION: Modified 256-bit representation of a capability
+    #+ATTR_LATEX: :width 0.8\textwidth
+    #+NAME: fig:uninit-cap-rep
+    [[../../figures/uninit-cap-representation.png]]
+    \FloatBarrier
+
+*** Instruction Modifications
+    A few instruction were modified to take the uninitialized permission into account. What follows
+    is a list of the instructions modified and a description of what that modification entails:
+
+    \bigskip
+    @@latex:\noindent@@
+    *Load via Capability Register (CL[BHWD][U]/CLC)*: When load instructions are given a capability
+    with the uninitialized permission set, it should not be allowed to load from an address lower
+    than the cursor.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Set/Increment Offset (CSetOffset/CIncOffset//CIncOffsetImmediate/CSetAddr/CAndAddr)*: Instructions that modify 
+    the cursor of an uninitialized capability should not allow it be set lower than it originally 
+    was. The only way of lowering the cursor should be by using the uninitialized store instructions.
+
+*** New Instructions
+    A few new instructions have been added for the implementation of uninitialized capabilities:
+
+    \bigskip
+    @@latex:\noindent@@
+    *Uninitialized a Capability (CUninit)*: An instruction to make a capability uninitialized.
+    This instruction takes a source capability register and a destination capability register that
+    will contain the capability from the source register but with the uninitialized permission set.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Uninitialized Store (UCS[BHWD]/UCSC)*: These instructions are modified versions of their
+    not-uninitialized counterparts (CS[BHWD], CSC). Using these store instructions behaves similar to the normal
+    store instructions, except when the given offset is $-1$. In that case, the capability
+    written to the destination capability register will have the cursor of the source capability 
+    decremented by the number of bytes written (i.e. 1 for a byte, 2 for a half word, 4 for a word,
+    8 for a double word and 32 for capabilities when using the 256-bit capability format). 
+    Specifying an offset of $-1$ is the *only* way to decrement the cursor.
+    This instruction takes 4 arguments, a destination capability register (which will contain
+    the source capability but possibly with its cursor modified if the offset was $-1$), a source 
+    register for the data to write, an offset and a source capability register.
+
+    \bigskip
+    The original store instructions for capabilities are *not* modified (CSC, CSW, ...), but instead 
+    I propose to add new instructions to handle the uninitialized permission. The new instructions
+    write to a capability register the possibly modified capability (if it has the *U* permission
+    set and the given offset is $-1$), while the original instructions do not write to a register but
+    instead allow specifying a register containing another offset to be added to the cursor of the
+    capability.
+
+    One additional instruction is required to modify the bounds of uninitialized capabilities:
+
+    \bigskip
+    @@latex:\noindent@@
+    *Shrink a Capability (CShrink[Imm])*: CShrink is an instruction with 3 parameters, the destination
+    capability register, the source capability register and a general-purpose register (GPR) ,or alternatively
+    an unsigned immediate for CShrinkImm. The capability from the source register will be 
+    modified by setting $end = cursor$ and $base = value\ in\ GPR$ for CShrink. For CShrinkImm
+    $end = cursor$ and $base = base + immediate$. CShrink[Imm] will raise an exception if the
+    $end < cursor$ (the original $end$ and $cursor$ of the capability) or if $newBase < base$, 
+    these conditions prevent expanding the range of authority of the capability.
+    
+    \bigskip
+    In the CHERI-MIPS ISA a similar instruction is already available, *CSetBounds*, but this 
+    instruction did not meet the needs of uninitialized capabilities. It adjusts the bounds
+    by setting $base = cursor$ and $end = cursor + immediate$, where immediate is either the value
+    from the general-purpose register specified in the instruction or an unsigned immediate value.
+    
+    The issue with using this instruction in combination with uninitialized capabilities arises
+    when trying to lower the $end$ of the uninitialized capability, but maintain the same $base$.
+    Using CSetBounds this would require first setting $cursor = base$, calculate the offset
+    for the new $end$, perform the CSetBounds instruction and then setting the $cursor$ back
+    to its value before it was set to $base$. This obviously means lowering the cursor ($cursor = base$)
+    which is not permitted for uninitialized capabilities.
+
+** CHERI-MIPS ISA Extension
+   The concrete extension made to the CHERI-MIPS ISA will be given in this section. Each instruction,
+   as explained in the previous section, will be given with its format, encoding, purpose, description
+   semantics, exceptions and optional notes. This is the same template as used in the CHERI technical
+   report \parencite[chapter~7]{watson2019capability}.
+   For the modified instructions only the modifications will be given for the template above, for
+   the complete information of the instruction, please refer to the CHERI technical report \parencite[chapter~7]{watson2019capability}.
+   
+\newpage   
+*** CL[BHWD][U]
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCLoadexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    On top of the existing conditions on which an exception is thrown, one additional condition
+    is added that raises a coprocessor 2 exception:
+    - cb.uninit is set and $addr < cursor$.
+
+\newpage   
+*** CLC
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCLCexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    On top of the existing conditions on which an exception is thrown, one additional condition
+    is added that raises a coprocessor 2 exception:
+    - cb.uninit is set and $addr < cursor$.
+
+\newpage   
+*** CSetOffset
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCSetOffsetexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    There is one more case when an exception will be raised:
+    - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is negative.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - It is not possible to lower the cursor by supplying a negative offset when the 
+      capability is uninitialized.
+    
+\newpage   
+*** CIncOffset
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCIncOffsetexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    There is one more case when an exception will be raised:
+    - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is negative.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - It is not possible to lower the cursor by supplying a negative offset when the 
+      capability is uninitialized.
+
+\newpage   
+*** CIncOffsetImm
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCIncOffsetImmediateexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    There is one more case when an exception will be raised:
+    - $cb.tag$ is set, $cb.uninit$ is set and /imm/ is negative.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - It is not possible to lower the cursor by supplying a negative immediate when the 
+      capability is uninitialized.
+
+\newpage   
+*** CSetAddr
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCSetAddrexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    There is one more case when an exception will be raised:
+    - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is smaller than the current address
+      of /cb/ (this means lowering the address, which is not allowed for uninitialized capabilities).
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - It is not possible to lower the cursor by supplying an address lower than the current address
+      of the capability if the capability is uninitialized.
+
+\newpage   
+*** CAndAddr
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCAndAddrexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    There is one more case when an exception will be raised:
+    - $cb.tag$ is set, $cb.uninit$ is set and /newAddr/ is smaller than the current address
+      of /cb/ (this means lowering the address, which is not allowed for uninitialized capabilities).
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - It is not possible to lower the cursor by supplying a value in /rt/ that, when performing the
+      bitwise AND operator with the current address, would result in an address lower than the 
+      current address of the capability if the capability is uninitialized.
+
+\newpage   
+*** CUninit
+    @@latex:\noindent@@
+    *Format* \\
+    CUninit cd, cb \\
+
+    \bigskip
+    @@latex:\noindent@@
+    *Encoding* \\
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/cuninit-encoding.png]]
+    \FloatBarrier
+
+    \bigskip
+    @@latex:\noindent@@
+    *Description* \\
+    Capability in capability register $cb$ is written to capability register $cd$ but with the
+    $uninit$ bit set.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCUninitexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    # TODO: explain sealing a bit somewhere?
+    An exception is raised if the capability in $cb$ is sealed.
+
+\newpage   
+*** UCS[BHWD]
+    @@latex:\noindent@@
+    *Format* \\
+    UCSB cd, rs, offset(cb) \\
+    UCSH cd, rs, offset(cb) \\ 
+    UCSW cd, rs, offset(cb) \\
+    UCSD cd, rs, offset(cb) \\
+
+    \bigskip
+    @@latex:\noindent@@
+    *Encoding* \\
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/ucsbhwd-encoding.png]]
+    \FloatBarrier
+
+    \bigskip
+    @@latex:\noindent@@
+    *Description* \\
+    This instructions stores some or all of register $rs$ into the memory location specified by
+    $cb.base + cb.offset + rt + 2^t * offset$ if the capability $cb$ has the permission to store
+    data. The $t$ field indicates how many bits are stored to the memory location:
+    - *0*: byte (8 bits)
+    - *1*: halfword (16 bits)
+    - *2*: word (32 bits)
+    - *3*: doubleword (64 bits)
+    The least-significant end of the register is used when less than 64 bits need to be stored.
+    
+    When the given offset equals $-1$, the cursor of the capability $cb$ is decremented by
+    the amount of bytes written to memory and the modified capability with the decremented
+    cursor is written to $cd$. If the offset is not $-1$, $cb$ is copied to $cd$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclUCStoreexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    A coprocessor 2 exception is raised if:
+    - $cb.tag$ is not set;
+    - $cb$ is sealed;
+    - $cb.perms.Permit\_Store$ is not set;
+    - $addr + size > cb.base + cb.length$;
+    - $addr < cb.base$.
+      
+    @@latex:\noindent@@
+    An address error exception during store (AdES) is raised if:
+    - $addr$ is not aligned.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - $rt$ is treated as an unsigned integer.
+    - $offset$ is treated as a signed integer.
+    - if $offset = -1$ than the capability written to $cd$ will be $cb$ but with the
+      cursor decremented by the number of bytes written.
+
+\newpage   
+*** UCSC
+    @@latex:\noindent@@
+    *Format* \\
+    UCSC cd, cs, offset(cb) \\
+
+    \bigskip
+    @@latex:\noindent@@
+    *Encoding* \\
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/ucsc-encoding.png]]
+    \FloatBarrier
+
+    \bigskip
+    @@latex:\noindent@@
+    *Description* \\
+    This instructions stores capability register $cs$ into the memory location specified by
+    $cb.base + cb.offset + rt + capability\_size * offset$ if the capability $cb$ has the permission  
+    to store capabilities. $capability\_size$ indicates the size of a capability in bytes. For the
+    256-bit capability format this value will be 32.
+    
+    When the given offset equals $-1$, the cursor of the capability $cb$ is decremented by
+    the $capability\_size$ and the modified capability with the decremented
+    cursor is written to $cd$. If the offset is not $-1$, $cb$ is copied to $cd$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclUCStoreCapexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    A coprocessor 2 exception is raised if:
+    - $cb.tag$ is not set;
+    - $cb$ is sealed;
+    - $cb.perms.Permit\_Store$ is not set;
+    - $cb.perms.Permit\_Store\_Capability$ is not set;
+    - $cb.perms.Permit\_Store\_Local$ is not set and $cs.tag$ is set and $cs.perms.Global$ is not set;
+    - $addr + size > cb.base + cb.length$;
+    - $addr < cb.base$.
+
+    @@latex:\noindent@@
+    A TLB store exception is raised if:
+    - $cs.tag$ is set and the $S$ bit in the TLB entry for the page containing $addr$ is not set.
+      
+    @@latex:\noindent@@
+    An address error exception during store (AdES) is raised if:
+    - The virtual $addr$ is not $capability\_size$ aligned.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - $offset$ is treated as a signed integer.
+    - if $offset = -1$ than the capability written to $cd$ will be $cb$ but with the
+      cursor decremented by the $capability\_size$.
+    
+\newpage   
+*** CShrink
+    @@latex:\noindent@@
+    *Format* \\
+    CShrink cd, cb, rt \\
+
+    \bigskip
+    @@latex:\noindent@@
+    *Encoding* \\
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/cshrink-encoding.png]]
+    \FloatBarrier
+
+    \bigskip
+    @@latex:\noindent@@
+    *Description* \\
+    The capability written to register $cd$ will have a different range of authority, specified by:
+    - $cd.length = cb.offset$;
+    - $cd.base = rt$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCShrinkexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    A coprocessor 2 exception is raised if:
+    - $cb$ is sealed;
+    - $rt < cb.base$;
+    - $cb.base + cb.length < cb.base + cb.offset$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - $rt$ is treated as an unsigned integer;
+    - $cd.base + cd.offset$ will no longer be in the range of authority of $cd$.
+
+\newpage   
+*** CShrinkImm
+    @@latex:\noindent@@
+    *Format* \\
+    CShrink cd, cb, immediate \\
+
+    \bigskip
+    @@latex:\noindent@@
+    *Encoding* \\
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/cshrinkimm-encoding.png]]
+    \FloatBarrier
+
+    \bigskip
+    @@latex:\noindent@@
+    *Description* \\
+    The capability written to register $cd$ will have a different range of authority, specified by:
+    - $cd.length = cb.offset$;
+    - $cd.base = cb.base + immediate$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Semantics* \\
+    \sailfclCShrinkImmediateexecute{}
+
+    \bigskip
+    @@latex:\noindent@@
+    *Exceptions* \\
+    A coprocessor 2 exception is raised if:
+    - $cb$ is sealed;
+    - $rt < cb.base$;
+    - $cb.base + cb.length < cb.base + cb.offset$.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Notes* \\
+    - $immediate$ is treated as an unsigned integer;
+    - $cd.base + cd.offset$ will no longer be in the range of authority of $cd$.

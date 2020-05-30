@@ -21,6 +21,8 @@
 #+LATEX_HEADER: \promotors{Promotor: Prof. Dr. Dominique Devriese \\ Supervisor: Thomas Van Strydonck \\ Supervisor: Dr. Steven Keuchel}
 #+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
 #+LATEX_HEADER: \input{cheri-mips-asm.tex}
+#+LATEX_HEADER: \input{sail.tex}
+#+LATEX_HEADER: \input{sail_latex/commands.tex}
 #+LATEX_CLASS_OPTIONS: [10pt]
 #+LATEX_HEADER: \addbibresource{references.bib}
 
@@ -36,14 +38,12 @@
   of the calling convention with uninit caps) and why uninit caps alone cannot make a secure calling
   convention.
 
+
 #+INCLUDE: ./chapters/literature-review.org :minlevel 1
 
 #+INCLUDE: ./chapters/background.org :minlevel 1
-  
-* Unitialized Capabilities CHERI-MIPS ISA Extension
-  Mention the change made to the capability format (requiring new permission bit for caps).
-  Mention the modified instructions and why these modifications were necessary.
-  Mention the added instructions and why these are needed.
+
+#+INCLUDE: ./chapters/uninitialized-capabilities.org :minlevel 1
   
 * LLVM  
   Explain that the CHERI-team has a modified version of the LLVM compiler in which the MIPS
