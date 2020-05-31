@@ -1,9 +1,10 @@
 * Uninitialized Capabilities
-  Uninitialized capabilities are a new type of capabilities, which represent the authority to 
-  only read those parts of memory to which has been written first using the uninitialized capability.
-  This type of capability requires a new pmerission to be added to capabilities 
-  (*U*: uninitialized) and prevents the holder of the capability from reading memory that was not
-  initialized. Figure \ref{fig:uninit-cap-concept} clarifies this concept a bit more.
+  Uninitialized capabilities are a new type of capabilities. They are memory capabilities which 
+  represent read-write authority to a range of memory, except that they do not allow reading the 
+  initial contents of the memory. The memory first needs to be overwritten before it can be read.
+  This type of capability requires a new permission to be added to capabilities 
+  (*U*: uninitialized) and prevents the holder of the capability from reading memory that they have
+  not first initialized. Figure \ref{fig:uninit-cap-concept} clarifies this concept a bit more.
 
   #+CAPTION: Uninitialized Capabilities Concept
   #+ATTR_LATEX: :width 0.5\textwidth
@@ -18,7 +19,7 @@
     uninitialized capability is able to read from the location it has just written to.
 
   Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
-  data without the need of clearing that uninitialized data.
+  data without the need of clearing that uninitialized data first.
 
   The full set of permissions becomes:
   - *R*: read-only;
@@ -32,17 +33,17 @@
   uninitialized capability), which means that the non-readable range of the capability would grow.
   Another option is to allow the combination of the *U* permission with the *X* permission, 
   but when jumping to an uninitialized capability transform it into a normal capability for
-  the range $[cursor, end]$ before placing it in the program counter register.
+  the range $[cursor, end]$ before placing it in the program counter capability register.
 
 ** Implementation Overview
-   This section will explain the implementation of uninitialized capabilities for the CHERI-MIPS
-   ISA using the 256-bit capability format. The implementation is not limited to CHERI-MIPS and
-   the 256-bit capability format and should be possible for other ISAs and different capability
-   formats. The concept of uninitialized capabilities is an addition to the CHERI protection model,
-   regardless of the architecture it is run on.
+   This section gives an overview of the concrete design of uninitialized capabilities for the
+   /CHERI/ capability machine, particularly the CHERI-MIPS ISA and the 256-bit capability format.
+   However, the general concept is not limited to CHERI-MIPS or the 256-bit capability format.
+   The concept of uninitialized capabilities is an addition to capability machines in general, and
+   particularly the CHERI protection model, regardless of the architecture is it run on.
 
 *** Uninitialized Permission Bit
-    The first modification that needed to be made to CHERI capabilities is the addition of a new
+    The first modification that needs to be made to CHERI capabilities is the addition of a new
     permission, the uninitialized permission. In the 256-bit capability format there are a few 
     unused bits (padding bits) available so one of those bits is now used for the 
     uninitialized permission, as can be seen in Figure \ref{fig:uninit-cap-rep}.
@@ -60,29 +61,37 @@
     \bigskip
     @@latex:\noindent@@
     *Load via Capability Register (CL[BHWD][U]/CLC)*: When load instructions are given a capability
-    with the uninitialized permission set, it should not be allowed to load from an address lower
+    with the uninitialized permission set, it is not allowed to load from an address lower
     than the cursor.
 
     \bigskip
     @@latex:\noindent@@
     *Set/Increment Offset (CSetOffset/CIncOffset//CIncOffsetImmediate/CSetAddr/CAndAddr)*: Instructions that modify 
-    the cursor of an uninitialized capability should not allow it be set lower than it originally 
-    was. The only way of lowering the cursor should be by using the uninitialized store instructions.
+    the cursor of an uninitialized capability are not allowed to set the cursor lower than it originally 
+    was. The only way of lowering the cursor is by using the uninitialized store instructions.
 
 *** New Instructions
     A few new instructions have been added for the implementation of uninitialized capabilities:
 
     \bigskip
     @@latex:\noindent@@
-    *Uninitialized a Capability (CUninit)*: An instruction to make a capability uninitialized.
+    *Get Uninitialized Bit of a Capability (CGetUninit)*: This instructions has 2 parameters,
+    the general-purpose register to store the uninitialized bit of the capability into and
+    the capability of which the uninitialized bit is requested.
+
+    \bigskip
+    @@latex:\noindent@@
+    *Uninitialize a Capability (CUninit)*: An instruction to make a capability uninitialized.
     This instruction takes a source capability register and a destination capability register that
     will contain the capability from the source register but with the uninitialized permission set.
+    An error will be raised if the original capability did not have read-write authority.
 
     \bigskip
     @@latex:\noindent@@
     *Uninitialized Store (UCS[BHWD]/UCSC)*: These instructions are modified versions of their
-    not-uninitialized counterparts (CS[BHWD], CSC). Using these store instructions behaves similar to the normal
-    store instructions, except when the given offset is $-1$. In that case, the capability
+    not-uninitialized counterparts (CS[BHWD], CSC). They behave similarly to the normal
+    store instructions, except when the given offset is $-1$ and the capability used for the store
+    is uninitialized. In that case, the capability
     written to the destination capability register will have the cursor of the source capability 
     decremented by the number of bytes written (i.e. 1 for a byte, 2 for a half word, 4 for a word,
     8 for a double word and 32 for capabilities when using the 256-bit capability format). 
@@ -104,7 +113,7 @@
     \bigskip
     @@latex:\noindent@@
     *Shrink a Capability (CShrink[Imm])*: CShrink is an instruction with 3 parameters, the destination
-    capability register, the source capability register and a general-purpose register (GPR) ,or alternatively
+    capability register, the source capability register and a general-purpose register (GPR), or alternatively
     an unsigned immediate for CShrinkImm. The capability from the source register will be 
     modified by setting $end = cursor$ and $base = value\ in\ GPR$ for CShrink. For CShrinkImm
     $end = cursor$ and $base = base + immediate$. CShrink[Imm] will raise an exception if the
@@ -125,181 +134,183 @@
     which is not permitted for uninitialized capabilities.
 
 ** CHERI-MIPS ISA Extension
-   The concrete extension made to the CHERI-MIPS ISA will be given in this section. Each instruction,
-   as explained in the previous section, will be given with its format, encoding, purpose, description
+   The implementation of the design of uninitialized capabilities, as described in the previous section,
+   has been instantiated for CHERI-MIPS in software (using a simulator).
+   Each instruction will be given with its format, encoding, purpose, description,
    semantics, exceptions and optional notes. This is the same template as used in the CHERI technical
    report \parencite[chapter~7]{watson2019capability}.
-   For the modified instructions only the modifications will be given for the template above, for
+   For the modified instructions only the modifications will be given for the template, for
    the complete information of the instruction, please refer to the CHERI technical report \parencite[chapter~7]{watson2019capability}.
    
 \newpage   
-*** CL[BHWD][U]
-    @@latex:\noindent@@
-    *Semantics* \\
+** CL[BHWD][U]
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCLoadexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     On top of the existing conditions on which an exception is thrown, one additional condition
     is added that raises a coprocessor 2 exception:
     - cb.uninit is set and $addr < cursor$.
 
 \newpage   
-*** CLC
-    @@latex:\noindent@@
-    *Semantics* \\
+** CLC
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCLCexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     On top of the existing conditions on which an exception is thrown, one additional condition
     is added that raises a coprocessor 2 exception:
     - cb.uninit is set and $addr < cursor$.
 
 \newpage   
-*** CSetOffset
-    @@latex:\noindent@@
-    *Semantics* \\
+** CSetOffset
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCSetOffsetexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     There is one more case when an exception will be raised:
     - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is negative.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - It is not possible to lower the cursor by supplying a negative offset when the 
       capability is uninitialized.
     
 \newpage   
-*** CIncOffset
-    @@latex:\noindent@@
-    *Semantics* \\
+** CIncOffset
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCIncOffsetexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     There is one more case when an exception will be raised:
     - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is negative.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - It is not possible to lower the cursor by supplying a negative offset when the 
       capability is uninitialized.
 
 \newpage   
-*** CIncOffsetImm
-    @@latex:\noindent@@
-    *Semantics* \\
+** CIncOffsetImm
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCIncOffsetImmediateexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     There is one more case when an exception will be raised:
     - $cb.tag$ is set, $cb.uninit$ is set and /imm/ is negative.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - It is not possible to lower the cursor by supplying a negative immediate when the 
       capability is uninitialized.
 
 \newpage   
-*** CSetAddr
-    @@latex:\noindent@@
-    *Semantics* \\
+** CSetAddr
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCSetAddrexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     There is one more case when an exception will be raised:
     - $cb.tag$ is set, $cb.uninit$ is set and the value of /rt/ is smaller than the current address
       of /cb/ (this means lowering the address, which is not allowed for uninitialized capabilities).
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - It is not possible to lower the cursor by supplying an address lower than the current address
       of the capability if the capability is uninitialized.
 
 \newpage   
-*** CAndAddr
-    @@latex:\noindent@@
-    *Semantics* \\
+** CAndAddr
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Semantics
     \sailfclCAndAddrexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     There is one more case when an exception will be raised:
     - $cb.tag$ is set, $cb.uninit$ is set and /newAddr/ is smaller than the current address
       of /cb/ (this means lowering the address, which is not allowed for uninitialized capabilities).
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - It is not possible to lower the cursor by supplying a value in /rt/ that, when performing the
       bitwise AND operator with the current address, would result in an address lower than the 
       current address of the capability if the capability is uninitialized.
 
 \newpage   
-*** CUninit
-    @@latex:\noindent@@
-    *Format* \\
-    CUninit cd, cb \\
+** CGetUninit
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    CGetUninit rd, cb
 
-    \bigskip
-    @@latex:\noindent@@
-    *Encoding* \\
+*** Encoding
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/cgetuninit-encoding.png]]
+    \FloatBarrier
+
+*** Description
+    The uninitialized bit of the capability in register $cb$ is written (zero extended) to $rd$.
+
+*** Semantics
+    \sailfclCGetUninitexecute{}
+
+\newpage   
+** CUninit
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    CUninit cd, cb
+
+*** Encoding
     #+ATTR_LATEX: :width 0.8\textwidth
     [[../../figures/cuninit-encoding.png]]
     \FloatBarrier
 
-    \bigskip
-    @@latex:\noindent@@
-    *Description* \\
+*** Description
     Capability in capability register $cb$ is written to capability register $cd$ but with the
     $uninit$ bit set.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Semantics* \\
+*** Semantics
     \sailfclCUninitexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     # TODO: explain sealing a bit somewhere?
     An exception is raised if the capability in $cb$ is sealed.
 
 \newpage   
-*** UCS[BHWD]
-    @@latex:\noindent@@
-    *Format* \\
+** UCS[BHWD]
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
     UCSB cd, rs, offset(cb) \\
     UCSH cd, rs, offset(cb) \\ 
     UCSW cd, rs, offset(cb) \\
-    UCSD cd, rs, offset(cb) \\
+    UCSD cd, rs, offset(cb)
 
-    \bigskip
-    @@latex:\noindent@@
-    *Encoding* \\
+*** Encoding
     #+ATTR_LATEX: :width 0.8\textwidth
     [[../../figures/ucsbhwd-encoding.png]]
     \FloatBarrier
 
-    \bigskip
-    @@latex:\noindent@@
-    *Description* \\
+*** Description
     This instructions stores some or all of register $rs$ into the memory location specified by
     $cb.base + cb.offset + rt + 2^t * offset$ if the capability $cb$ has the permission to store
     data. The $t$ field indicates how many bits are stored to the memory location:
@@ -313,14 +324,10 @@
     the amount of bytes written to memory and the modified capability with the decremented
     cursor is written to $cd$. If the offset is not $-1$, $cb$ is copied to $cd$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Semantics* \\
+*** Semantics
     \sailfclUCStoreexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     A coprocessor 2 exception is raised if:
     - $cb.tag$ is not set;
     - $cb$ is sealed;
@@ -332,30 +339,26 @@
     An address error exception during store (AdES) is raised if:
     - $addr$ is not aligned.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - $rt$ is treated as an unsigned integer.
     - $offset$ is treated as a signed integer.
     - if $offset = -1$ than the capability written to $cd$ will be $cb$ but with the
       cursor decremented by the number of bytes written.
 
 \newpage   
-*** UCSC
-    @@latex:\noindent@@
-    *Format* \\
-    UCSC cd, cs, offset(cb) \\
+** UCSC
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    UCSC cd, cs, offset(cb)
 
-    \bigskip
-    @@latex:\noindent@@
-    *Encoding* \\
+*** Encoding
     #+ATTR_LATEX: :width 0.8\textwidth
     [[../../figures/ucsc-encoding.png]]
     \FloatBarrier
 
-    \bigskip
-    @@latex:\noindent@@
-    *Description* \\
+*** Description
     This instructions stores capability register $cs$ into the memory location specified by
     $cb.base + cb.offset + rt + capability\_size * offset$ if the capability $cb$ has the permission  
     to store capabilities. $capability\_size$ indicates the size of a capability in bytes. For the
@@ -365,14 +368,10 @@
     the $capability\_size$ and the modified capability with the decremented
     cursor is written to $cd$. If the offset is not $-1$, $cb$ is copied to $cd$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Semantics* \\
+*** Semantics
     \sailfclUCStoreCapexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     A coprocessor 2 exception is raised if:
     - $cb.tag$ is not set;
     - $cb$ is sealed;
@@ -390,87 +389,69 @@
     An address error exception during store (AdES) is raised if:
     - The virtual $addr$ is not $capability\_size$ aligned.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - $offset$ is treated as a signed integer.
     - if $offset = -1$ than the capability written to $cd$ will be $cb$ but with the
       cursor decremented by the $capability\_size$.
     
 \newpage   
-*** CShrink
-    @@latex:\noindent@@
-    *Format* \\
-    CShrink cd, cb, rt \\
+** CShrink
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    CShrink cd, cb, rt
 
-    \bigskip
-    @@latex:\noindent@@
-    *Encoding* \\
+*** Encoding
     #+ATTR_LATEX: :width 0.8\textwidth
     [[../../figures/cshrink-encoding.png]]
     \FloatBarrier
 
-    \bigskip
-    @@latex:\noindent@@
-    *Description* \\
+*** Description
     The capability written to register $cd$ will have a different range of authority, specified by:
     - $cd.length = cb.offset$;
     - $cd.base = rt$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Semantics* \\
+*** Semantics
     \sailfclCShrinkexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     A coprocessor 2 exception is raised if:
     - $cb$ is sealed;
     - $rt < cb.base$;
     - $cb.base + cb.length < cb.base + cb.offset$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - $rt$ is treated as an unsigned integer;
     - $cd.base + cd.offset$ will no longer be in the range of authority of $cd$.
 
 \newpage   
-*** CShrinkImm
-    @@latex:\noindent@@
-    *Format* \\
-    CShrink cd, cb, immediate \\
+** CShrinkImm
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    CShrink cd, cb, immediate
 
-    \bigskip
-    @@latex:\noindent@@
-    *Encoding* \\
+*** Encoding
     #+ATTR_LATEX: :width 0.8\textwidth
     [[../../figures/cshrinkimm-encoding.png]]
     \FloatBarrier
 
-    \bigskip
-    @@latex:\noindent@@
-    *Description* \\
+*** Description
     The capability written to register $cd$ will have a different range of authority, specified by:
     - $cd.length = cb.offset$;
     - $cd.base = cb.base + immediate$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Semantics* \\
+*** Semantics
     \sailfclCShrinkImmediateexecute{}
 
-    \bigskip
-    @@latex:\noindent@@
-    *Exceptions* \\
+*** Exceptions
     A coprocessor 2 exception is raised if:
     - $cb$ is sealed;
     - $rt < cb.base$;
     - $cb.base + cb.length < cb.base + cb.offset$.
 
-    \bigskip
-    @@latex:\noindent@@
-    *Notes* \\
+*** Notes
     - $immediate$ is treated as an unsigned integer;
     - $cd.base + cd.offset$ will no longer be in the range of authority of $cd$.
