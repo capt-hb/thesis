@@ -12,7 +12,7 @@
   Note that it is still necessary that a callee clears its used stack frame.
 
   Having an uninitialized stack capability prevents adversaries from reading from the stack unless they first 
-  overwrite the uninitialized data (this could be garbage but also well sensitive data or capabilities that they should not get access to).
+  overwrite the uninitialized data (this could be garbage but also sensitive data or capabilities that they should not get access to).
   See Figure \ref{fig:uninit-stack} for a conceptual diagram of having an uninitialized stack
   capability.
 
