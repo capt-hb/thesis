@@ -98,6 +98,12 @@
 
     \bigskip
     @@latex:\noindent@@
+    *Get Uninitialized Bit of a Capability (CGetUninit)*: This instructions has 2 parameters,
+    the general-purpose register to store the uninitialized bit of the capability into and
+    the capability of which the uninitialized bit is requested.
+
+    \bigskip
+    @@latex:\noindent@@
     *Uninitialize a Capability (CUninit)*: An instruction to make a capability uninitialized.
     This instruction takes a source capability register and a destination capability register that
     will contain the capability from the source register but with the uninitialized permission set.
