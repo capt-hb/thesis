@@ -1,4 +1,5 @@
 * Calling Convention Using Local Capabilities
+  <<sec:lau-cc>>
   The calling convention described in this section is the one defined by Skorstengaard et al.\parencite{skorstengaard2018reasoning}
   It makes use of local capabilities, which are capabilities that can only be kept in registers except
   for when you have a capability with the write-local permission. This requires that capabilities

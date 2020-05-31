@@ -1,4 +1,5 @@
 * CHERI-MIPS Calling Convention
+  <<sec:cheri-cc>>
   This section describes the calling convention used in CHERI-MIPS (for the purecap ABI), which
   is similar to the MIPS-N32/N64 calling convention\parencite{watson2019capability}. The CHERI ISAv7 
   technical report mentions the capability register conventions used in the calling convention
