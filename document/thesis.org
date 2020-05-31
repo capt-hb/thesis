@@ -27,6 +27,15 @@
 #+LATEX_HEADER: \addbibresource{references.bib}
 
 \newpage
+* Notice
+  :PROPERTIES:
+  :UNNUMBERED: notoc
+  :END:
+  #+INCLUDE: ./chapters/covid-19/en.org :minlevel 2
+  #+INCLUDE: ./chapters/covid-19/nl.org :minlevel 2
+
+\newpage
+
 
 # TODO: English Abstract AND Dutch Abstract
 * Abstract
