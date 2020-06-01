@@ -1,53 +1,11 @@
 * Secure Calling Convention 
-  # TODO: plan was to "port" local cap cc to cheri using sealed caps
-  #       Dominique proposed to already do this porting in the local cap cc?
-
-  # Laus calling convention is destijds geformuleerd in termen van een minimale capability machine die werkt met enter-capabilities.
-  # Dit zijn een soort capabilities die origineel komen van de M-Machine.
-  # Ze zijn een soort capabilities die onbruikbaar en onwijzigbaar zijn (zoals sealed capabilities op CHERI) en waar je essentieel niets mee kan doen behalve ernaar springen.
-  # Wanneer je ernaar springt, komt de enter-capability in het PC-register terecht en verandert zijn permissie van E (enter) naar RX.
-  # Eigenlijk werkt zo'n capability dus vrij gelijkaardig aan een paar van sealed capabilities.
-  # Alleen moet je er voor moet zorgen dat het data-deel en het code-deel van de capability vlak naast elkaar in het geheugen liggen en kan je vanuit zo'n enter capability aan je private data door pc-relative adressing, dus bijvoorbeeld iets laden uit het geheugen op locatie (pc - 8) of dergelijke.
-  # Op CHERI zijn die sealed capability pairs effectief de vervanger van de enter capabilities van de M-Machine.
-  # In bijlage een presentatie waarin ik die twee varianten ooit eens heb uitgelegd (zie de prentjes op slide 10).
-
-  # Dat betekent echter dat je Laus calling convention een beetje moet aanpassen aan de nieuwe context.
-  # Dit is specifiek belangrijk voor de return capability.
-  # Die moet eigenlijk twee dingen bevatten: de code die moet worden uitgevoerd als er gereturnd wordt en de oude stack-capability van de caller.
-  # Het was een beetje vervelend om die return capability voor te stellen als een enter capability: je kan niet gewoon rechtstreeks naar de return code wijzen, omdat je de juiste stack capability niet vlak naast die code kan zetten (omdat er wegens reentrancy meerdere return pointers met verschillende stack capabilities naar dezelfde code moeten kunnen wijzen).
-  # Dus moest er een extra stuk indirectie-code op de stack gealloceerd worden met de stack-capability vlak ernaast alsook de executable capability waar we echt naar willen terugspringen.
-  # Die indirectie-code doet dan niets anders dan de twee andere capabilities van de stack halen en ernaar springen.
-  # Die extra indirectie is vervelend en zorgt er ook voor dat we de stack-capability execute-permissie moesten geven, omdat we de stack willen gebruiken om die return capabilities te construeren.
-
-  # Als je sealed capability pairs hebt, zoals op CHERI, kan je dat alles een stuk cleaner doen.
-  # Je kan nu return capabilities maken als capability pairs waarbij het code-deel rechtstreeks naar de juiste code locatie wijst.
-  # Het code deel van de return capability kan dan gewoon direct de oude stack capability zijn.
-  # In de StkTokens paper hebben we wel gewerkt met sealed capability paren en daar werken return capabilities effectief zo (maar daar heb je dan ook weer lineariteit).
-  # Het enige vervelende is dat je ervoor moet zorgen dat je voor elke return locatie (een locatie in de code waarnaar je soms return pointers moet construeren) een unieke seal kan bekomen.
-  # Conceptueel moet het de taak van de runtime linker zijn om ervoor te zorgen dat er voor elke dergelijke locatie een unieke seal gealloceerd wordt.
-  # Je mag dus veronderstellen dat er ergens een seal capability (vb. vlak boven de GOT of zo) in het geheugen klaarstaat die je kan gebruiken om aangemaakte return capabilities te sealen bij een functie-oproep.
-
-  # Enfin, wat ik dus wil zeggen is dat het in jouw context logisch zou zijn om te werken met Laus ESOP18 calling convention, maar dan aangepast aan het gebruik van sealed capability pairs ipv enter-capabilities.
-  # Dat betekent:
-  # - stack capability is niet RWLX maar RWL
-  # - return capabilities worden geen enter-capabilities maar capability pairs:
-  #   * code part is de (pc + 8) capability die je zou verwachten
-  #   * data part is de caller's oude stack pointer
-  #   * beide zijn gesealed met een gemeenschappelijk seal dat uniek is voor deze return locatie
-  #   * het code deel mag desnoods global zijn, maar het data deel moet local zijn (dit kan ook niet anders vermits je het construeert op basis van de stack pointer)
-  # - je hoeft de return instructies dan ook niet te alloceren op de stack.
-
-  # Het is mij niet helemaal duidelijk of bovenstaande uitleg nodig is.
-  # Misschien was je al van plan om bovenstaande aanpassingen te maken in de aangepaste calling convention met uninitialized caps?
-  # TODO: explain local capability vs global capability
-  # TODO: motivate some of the implemenation choices a bit more?
   The second contribution of this thesis is a modified version of the calling convention described
   in Section [[sec:lau-cc]] combined with the CHERI calling convention from Section [[sec:cheri-cc]]. 
   The differences are due to the original calling convention using local
   capabilities was described for a formal capability machine and the requirement
   for clearing the unused part of the stack. The calling convention described in this section
   is designed for the CHERI capability machine but should apply to capability machines in general
-  that support local capabilities and uninitialized capabilities.
+  that support local capabilities, sealed capabilities and uninitialized capabilities.
   An important notion for this calling convention is that the stack capability will have the
   permissions *RWL* and will add the *U* permission on function invocation, resulting in a 
   stack capability with the *UL* permissions. Figure \ref{fig:uninit-stack} shows the concept
@@ -65,10 +23,50 @@
   they first overwrite the uninitialized data (this could be garbage but also sensitive data or 
   capabilities they should not get access to).
   
-  In the following subsections it will be assumed that the stack capability is already a local
-  stack capability.
+  The calling convention requires sealing a pair of capabilities (the return capability and
+  stack capability) using a unique seal. By using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]])
+  it is not necessary to be able to unseal the pair (the ccall instruction will do this if the seals
+  of the sealed capability pair is the same). This means that the seals can be obtained by having
+  a central "sealing capability" from which a seal can be used and that seal can then be made
+  unavailable. For convenience, this sealing capability will be maintained in the /$DDC/ register
+  (default data capability), which is not used in the purecap ABI mode of CHERI (for which this
+  calling convention is designed). Obtaining a unique seal is then as trivial as just retrieving
+  the sealing capability to be used in the cseal instructions. Making the just used seal unobtainable
+  can then be done by increasing the cursor and changing the range of authority of the sealing
+  capability to no longer include the previous cursor (i.e. settings its base address higher).
+  The following sequence of instructions performs these actions:
 
-  # TODO: describe instructions used but not mentioned in "uninit caps" section!
+  #+begin_src cherimips -n
+  # Load seal capability
+  cgetdefault $c13
+
+  # Modify sealed capability 
+  cmove $c3, $c13
+  cincoffset $c3, $c3, 1
+  cgetlen $t2, $c3
+  cgetaddr $t3, $c3
+  sub $t2, $t2, $t3 # calculate new length
+  csetbounds $c3, $c3, $t2
+
+  # Store modified seal capability
+  csetdefault $c3
+  #+end_src
+  
+  On line 2 the sealing capability is loaded into /$c13/ (the /cgetdefault/ instruction loads
+  the capability in /$ddc/ into the specified registers, /c13/ in this case). Lines 5-10 modify
+  a copy of the sealed capability (/$c3), so that the seal of /$c13/ cannot be reused and is
+  unique. On line 13 the modified sealing capability is stored in the /$ddc/ register.
+  The cseal instructions following this sequence of instructions can now use /$c13/ to seal
+  capabilities with a unique seal. No other capability will be obtainable that can be used
+  to unseal the sealed capabilities using /$c13/ if /$c13/ is cleared when it is no longer
+  needed (given that if it is copied to another register(s) that the corresponding register(s)
+  also get cleared). The only remaining problem is that /$c13/ might get stored in the heap,
+  making it possible to retrieve it from adversary code. To avoid this, the sealing capability
+  is also made local. Now it can only be stored on the stack and in combination with using uninitialized
+  stack capabilities it is possible to prevent other code from accessing it.
+
+  In the following subsections it will be assumed that the stack capability is already a local
+  stack capability and that the sealing capability is local and available in the /$ddc/ register.
 
 ** Invoking A Function
    Before invoking a function, the caller-saved registers should be saved on the stack.
@@ -76,38 +74,36 @@
    original CHERI calling convention.
    
    There are a few steps that need to be taken before jumping to the function:
-   - the current stack capability needs to be sealed as a sealed entry capability;
+   - the current stack capability needs to be sealed;
    - the stack capability needs to be shrunk to no longer include the stack frame of the caller
      (i.e. the unused part of the stack) and needs to be made uninitialized;
-   - the sealed entry stack capability needs to be written in the stack frame of the callee;
    - the return capability is constructed as the current program counter capability but
      incremented so that it returns to the instruction that restores the old stack capability,
      this means passed spilling arguments to the stack, register clearing and jumping to the 
      function;
-   - the sealed entry return capability needs to be written in the stack frame of the callee;
    - arguments to be passed on the stack can now be pushed onto the stack frame of the callee;
    - registers need to be cleared, argument registers that are used should not be cleared,
-     capability registers /$c12/ and /$C11/ should not be cleared (/$C12/ contains the capability
-     to jump to and /$11/ contains the stack capability to be used by the callee);
+     capability registers /$ddc/, /$c1-2/, /$c11-12/ should not be cleared (/$ddc/ is the capability
+     used for sealing the stack and return capabilities, /$c1-2/ contain the return and stack
+     capability, /$c12/ contains the capability
+     to jump to and /$c11/ contains the stack capability to be used by the callee);
 
    After performing these steps, the jump to the function can take place.
    
-   When the callee returns, the stack capability of the caller will be in the /$IDC/ capability register
-   (which is /$C26/, used as the invoked data capability register) and the first instruction 
-   executed by jumping to the return capability is moving the contents of /$IDC/ into /$C11/ to 
-   restore the stack capability.
+   When the callee returns, the stack capability of the caller will be in the /$idc/ capability register
+   (which is /$c26/, used as the invoked data capability register) and the first instruction 
+   executed by jumping to the return capability is moving the contents of /$idc/ into /$c11/ to 
+   restore the stack capability. The caller-save registers can be restored at this point.
    
    The modified sequence of instruction before jumping to a function then corresponds to:
    #+begin_src cherimips -n
-   csealentry $c1, $c11       
+   cseal $c1, $c11, $c13       
    cshrink $c11, $c11, 0 
    cuninit $c11, $c11 
-   ucsc $c11, $c1, -1($c11) 
    
-   li $t0, 32 
+   li $t0, 28
    cgetpccincoffset $c17, $t0     
-   csealentry $c1, $c17 
-   ucsc $c11, $c17, -1($c11) 
+   cseal $c1, $c17, $c13
    
    # store arguments into registers if necessary
    ...
@@ -116,7 +112,7 @@
    
    clearlo 0xffff 
    clearhi 0xffff 
-   cclearlo 0b1110011111111111 
+   cclearlo 0b1110011111111000
    cclearhi 0xffff 
    
    cjr $c12
@@ -125,13 +121,17 @@
    cmove $c11, $idc
    #+end_src
    
-   The first four instructions (lines 1-4) seal the stack capability as a sealed entry capability,
-   then shrink the stack capability to only cover the unused part of the stack and make the
-   stack capability now uninitialized. The sealed entry stack capability is pushed onto the stack.
-   On lines 6-9 the return capability is created and also sealed as a sealed entry capability. The
-   sealed entry return capability gets pushed onto the stack.
+   The instruction sequence assumes that a unique seal for this function call site is available from the 
+   capability in register /$c13/.
+   The first 3 instructions (lines 1-3) seal the stack capability with the unique seal, then shrink
+   the stack capability to only cover the unused part of the stack and make the
+   stack capability now uninitialized. 
+   On lines 5-7 the return capability is created and also sealed using the same unique seal as for
+   the stack capability. Note that the program counter is incremented by 28, this number depends
+   on the number of instructions required to skip to get to the cmove instruction (line 22), this
+   is 28 in case no arguments need to be stored in registers or spilled to the stack.
    
-   The register clearing happens on lines 16-19 using the /CClearRegs/ \parencite[page~193]{watson2019capability} 
+   The register clearing happens on lines 14-17 using the /CClearRegs/ \parencite[page~193]{watson2019capability} 
    instruction (/clearlo/, /clearhi/, /cclearlo/ and /cclearhi/ are mnemonics for /cclearregs/ 
    that indicate a register set to be cleared). CClearRegs takes as a first argument the register 
    set to be cleared. The second argument is a mask indicating which registers of the register set 
@@ -139,18 +139,18 @@
    if bit 0 of the  mask is set than the lowest numbererd register in the register set will be cleared)
    Clearlo targets the register set /$r0-15/, clearhi register set /$r16-31/, cclearlo register set
    $ddc, /$c1-15/ and cclearhi register set /$c16-31/. In the instructions shown, all registers
-   except for /$c11/ and /$c12/ are cleared. When arguments are passed in registers to a function
-   than those registers should _not_ be cleared (i.e. their corresponding bit in the mask should
+   except for /$ddc/, /$c1-2/ and /$c11-12/ are cleared. When arguments are passed in registers to 
+   a function than those registers should _not_ be cleared (i.e. their corresponding bit in the mask should
    not be set).
    
-   The jump to the function to be invoked happens on line 21. Following this jump is a /nop/ 
+   The jump to the function to be invoked happens on line 19. Following this jump is a /nop/ 
    (no-operation) instruction, which is used for the branch delay slot of the preceding
    jump instruction. The instruction in the branch delay slot always executes after the branch and
    is used for better instruction level parallelism with pipelining \parencite[page~322]{patterson2016computer}.
    One of the clear registers could possibly be put in this branch delay slot. I have chosen not
    to do this here as it makes the different steps of the calling convention more clear.
    
-   Finally, the instruction on line 24 moves the content of register /$idc$ into the stack capability
+   Finally, the instruction on line 22 moves the content of register /$idc/ into the stack capability
    register /$c11/.
 
 ** Argument Passing
@@ -158,22 +158,23 @@
    
 ** Returning From A Function
    Returning from a function requires that the stack frame of the callee (the function from which
-   we want to return) is cleared. The local variables and spilled arguments should be cleared first.
-   Then, in order to return from a function, the return capability and previous stack capability need
-   to be popped from the stack into 2 capability registers.
+   we want to return) is cleared, thus the local variables and spilled arguments should be cleared.
    Unlike the current CHERI calling convention, it is no longer possible to use the /CJR/ 
-   instruction because the return capability is a sealed entry capability. Also keep in mind that 
-   the previous stack capability is also a sealed entry capability.
+   instruction because the return capability is a sealed capability (passed in /$c1/). 
+   Also keep in mind that  the previous stack capability is also a sealed capability (passed in /$c2/).
    The only way to return to the caller is thus by using the /CCall/ instruction.
-   # TODO: describe CCall, possibly in instr modifications section because of modification to it
-   As arguments to the /CCall/ instruction the return capability and previous stack capability are
+   As arguments to the /CCall/ instruction the return capability and previous stack capability registers are
    given. The selector used for /CCall/ is 1, so that the return capability is unsealed and placed
    in the program counter capability register and the previous stack capability is unsealed and
-   placed in the invoked data capability register (/$IDC/).
+   placed in the invoked data capability register (/$idc/).
    
    Before jumping to the return capability, the non-return registers need to be cleared.
-
    
+   As mentioned before, the return capability is passed in register /$c1/ and the stack capability
+   in register /$c2/, this choice was made to conform with the CHERI ABI and CheriBSD, which limits
+   the number of registers that may be used with the ccall instruction, in order to avoid the need
+   of decoding the instruction and determine the registers passed \parencite[page~184]{watson2019capability}.
+
 ** Function Prologue
    The stack setup happens before the function invocation by the caller, no additional 
    processing is required in the function prologue.
@@ -183,18 +184,9 @@
    becomes:
    #+begin_src cherimips -n
    # Clear local variables and spilled arguments
+   ucsw $c11, $zero, 1($c11)
    ucsw $c11, $zero, 0($c11)
-   cincoffset $c11, $c11, 4
 
-   # Load return & stack capability into $c2 and $c1
-   clc $c1, $zero, 0($c11)
-   dli $t0, 32
-   clc $c2, $t1, 0($c11)
-
-   # Clear return & stack capability from the stack frame
-   ucsc $c11, $cnull, 0($c11)
-   ucsc $c11, $cnull, 1($c11)
-   
    # Clear non-return registers
    clearlo 0b1111111111111011
    clearhi 0xffff
@@ -204,23 +196,17 @@
    ccall $c1, $c2, 1
    #+end_src
    
-   The first lines (1-2) indicate that the local variables and spilled arguments should be cleared,
+   The first lines (1-3) indicate that the local variables and spilled arguments should be cleared,
    this happens by writing the value of the zero register (/$r0/ which is the same as /$zero/) over
    the memory containing the local variables and spilled arguments until they are completely cleared.
-   In the example instructions above there was a single argument in the stack frame and has been
-   overwritten with zeroes. For convenience the stack capability cursor is incremented to be
-   above the cleared part of the stack frame.
-
-   On line 6-8 the return and previous stack capability are loaded into registers $c1 and $c2
-   respectively. After loading the return capability the value 32 is stored
-   into /$t0/ which is used as an offset to read the previous stack capability. Remember that
-   capabilities require 32 bytes to be stored.
-   The return and stack capability are then cleared from the stack (lines 11 and 12).
+   In the example instructions above there were 2 local variables in the stack frame and these 
+   have been overwritten with zeroes. 
    
-   Lines 15-18 clear the non-return registers. The only registers not cleared are
+   Lines 6-9 clear the non-return registers. The only registers not cleared are
    /$c1/ and /$c2/ (as these will be used for the /CCall/ instruction) and optionally the registers
    containing the return value, which can be /$c3/ if a capability is returned or /$r2-3/ for
    non-capability return values. In instruction sequence shown above, the assumption is made
    that the return value is stored in /$r2/, i.e. its bit in the mask to /clearlo/ is not set.
    
-   The /CCall/ instruction follows on line 20 and performs the actions discussed earlier.
+   The /CCall/ instruction follows on line 11 and performs the actions discussed earlier. Unlike
+   other jump instructions in MIPS, it does not have a branch in delay slot.
