@@ -32,9 +32,9 @@
 
    Some common permissions found on capability machines are:
    - *R*: read-only;
-   - *RW*: read-write;
-   - *RX*: read-execute;
-   - *RWX*: read-write-execute.
+   - *RW*: read, write;
+   - *RX*: read, execute;
+   - *RWX*: read, write, execute.
 
    Capabilities can be formally represented by a 4-tuple similar to the
    representation used by Skorstengaard et al. \parencite{skorstengaard2018reasoning}, 
@@ -49,6 +49,23 @@
    The behavior of capabilities is better defined as it can be deducted from the permissions and range
    of authority it has. If the cursor of the capabilities goes out-of-bounds then it cannot be used
    to dereference that address.
+   
+   The following two sections describe two kinds of capabilities that will be used later in the thesis.
+   
+*** Local Capabilities
+    Capabilities can be either /global/ or /local/. Global capabilities correspond to the 
+    capabilities explained above and can be stored by both global and local capabilities that have
+    the write permission. 
+    The new kind of capability is the /local/ capability, which
+    behaves different for storing local capabilities. Local capabilities can only be stored
+    into memory by using a capability that is local itself and has the write-local permission \parencite[sec~2.3.10]{watson2019capability}.
+
+*** Sealed Capabilities
+    <<sec:sealed-capabilities>>
+    One more kind of capability that is of interest for this thesis is the use of /sealed/ capabilities.
+    A sealed capability is immutable and cannot be used to read or write to memory.
+    If one wants to use a sealed capability or modify it, it must first be unsealed. Unsealing a
+    sealed capability can only be done by using the same seal by which it was sealed.
    
 ** CHERI 
    CHERI (\textbf{C}apability \textbf{H}ardware \textbf{E}nhanced \textbf{R}ISC \textbf{I}nstructions) 
@@ -73,7 +90,39 @@
    
    The CHERI ISA extension is implemented for the MIPS ISA (CHERI-MIPS) and has a functional
    hardware implementation. 
-
+   
+*** Sealed Capabilities
+    <<sec:cheri-sealed-capabilities>>
+    The definition of sealed capabilities was given in Section [[sec:sealed-capabilities]]. This section
+    will explain how CHERI supports sealed capabilities.
+    
+    Unsealed capabilities have an /otype/ (see Figure \ref{fig:uninit-cap-concept} of -1, which is
+    the default for all capabilities. A capability can be sealed by using the /CSeal/ instruction,
+    which is of the form: $cseal cd, cb, ct$. $cb$ contains the capability to be sealed and the
+    sealed capability will be written to $cd$. The seal itself is taken from the capability residing
+    in $ct$, more specifically, the 24 least significant bits of the cursor of $ct$.
+    This cursor is not allowed to be greater than the maximum otype (which is
+    $2^24 - 1 - 16$, the $- 16$ subtracts the reserved otypes that have a special meaning
+    and cannot be used as a normal seal). The cursor itself also needs to be in the bounds
+    of the capability used for sealing ($ct$). If these conditions are not met than an exception
+    is raised (some other conditions apply too but are irrelevant for the discussion here).
+    
+    I will discuss two options to unseal a capability. The first option to unseal a sealed 
+    capability is by using the /CUnseal/ instruction, of the format $cunseal cd, cb, ct$ which is
+    similar to the CSeal instruction.
+    The second option, the one that will be used later in the thesis, is using the /CCall/ instruction.
+    CCall is of the format $ccall cs, cb, selector$ (selector is an 11-bits constant), CHERI 
+    currently supports two selectors, the only selector used throughout the thesis is $selector = 1$,
+    for more details about CCall using $selector = 0$, refer to the CHERI technical report \parencite[page~181]{watson2019capability}.
+    Both capabilities in registers $cs$ and $cb$ will be unsealed, but only if they *both* have the
+    same seal. Furthermore, $cs$ should be a capability with the execute permission and $cb$ should
+    not have the execute permission set. $cs$ will be placed in the program counter capability register (PCC)
+    and $cb$ in the invoked data capability register (IDC).
+    
+    CCall thus takes a pair of sealed capabilities, a code capability and a data capability and will
+    unseal the pair and place the code capability in the PCC (i.e. jumping to it) and places the
+    data capability in the IDC.
+    
 ** Calling Convention
    This section will describe what a calling convention is. The next 2 sections discuss 2 specific calling
    conventions, the calling convention being used on CHERI-MIPS and a secure calling convention
