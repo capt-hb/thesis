@@ -21,12 +21,15 @@
   Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
   data without the need of clearing that uninitialized data first.
 
-  The full set of permissions becomes:
+  The full set of permissions becomes (for a capability machines with local capabilities):
   - *R*: read-only;
-  - *RW*: read-write;
-  - *RX*: read-execute;
-  - *RWX*: read-write-execute.
+  - *RW*: read, write;
+  - *RX*: read, execute;
+  - *RWX*: read, write, execute.
+  - *RWLX*: read, write-local, execute.
+  - *RWL*: read, write-local;
   - *U*: read between $[cursor, end]$, write between $[base, end]$;
+  - *UL*: read between $[cursor, end]$, write-local between $[base, end]$;
 
   Combinations of the *U* permission and *X* permission are invalid, executing an uninitialized 
   capabilities would require incrementing the program counter (and thus the cursor of the 
