@@ -19,7 +19,7 @@
 #+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
 #+LATEX_CLASS_OPTIONS: [10pt]
-#+LATEX_HEADER: \addbibresource{references.bib}
+#+LATEX_HEADER: \addbibresource{report.bib}
 
 \newpage
 
