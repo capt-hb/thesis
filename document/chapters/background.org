@@ -98,7 +98,7 @@
     
     Unsealed capabilities have an /otype/ (see Figure \ref{fig:uninit-cap-concept} of -1, which is
     the default for all capabilities. A capability can be sealed by using the /CSeal/ instruction,
-    which is of the form: $cseal cd, cb, ct$. $cb$ contains the capability to be sealed and the
+    which is of the form: ~cseal cd, cb, ct~. $cb$ contains the capability to be sealed and the
     sealed capability will be written to $cd$. The seal itself is taken from the capability residing
     in $ct$, more specifically, the 24 least significant bits of the cursor of $ct$.
     This cursor is not allowed to be greater than the maximum otype (which is
@@ -110,10 +110,10 @@
     instruction \parencite[Section~8.10]{watson2019capability}.
     
     I will discuss two options to unseal a capability. The first option to unseal a sealed 
-    capability is by using the /CUnseal/ instruction, of the format $cunseal cd, cb, ct$ which is
+    capability is by using the /CUnseal/ instruction, of the format ~cunseal cd, cb, ct~ which is
     similar to the CSeal instruction.
     The second option, the one that will be used later in the thesis, is using the /CCall/ instruction.
-    CCall is of the format $ccall cs, cb, selector$ (selector is an 11-bits constant), CHERI 
+    CCall is of the format ~ccall cs, cb, selector~ (selector is an 11-bits constant), CHERI 
     currently supports two selectors, the only selector used throughout the thesis is $selector = 1$,
     for more details about CCall using $selector = 0$, refer to the CHERI technical report \parencite[page~181]{watson2019capability}.
     Both capabilities in registers $cs$ and $cb$ will be unsealed, but only if they *both* have the
