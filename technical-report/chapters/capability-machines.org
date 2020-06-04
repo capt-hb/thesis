@@ -30,7 +30,7 @@
   - *RWX*: read-write-execute.
 
   For this technical report we will represent capabilities formally as a 4-tuple similar to the
-  representation used by Skorstengaard et al. \parencite{skorstengaard2018reasoning},
+  representation used by Skorstengaard et al.\nbsp{}\parencite{skorstengaard2018reasoning},
   (/permissions/, /base/, /end/, /cursor/), this tuple contains the 
   /permissions/ of the capability, the range to which these permissions apply $[base, end]$ and 
   a /cursor/ in that range. 

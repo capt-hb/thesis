@@ -78,7 +78,7 @@
     \FloatBarrier
     
 *** Instruction Modifications
-    A few instruction were modified to take the uninitialized permission into account. What follows
+    A few instructions were modified to take the uninitialized permission into account. What follows
     is a list of the instructions modified and a description of what that modification entails:
 
     \bigskip

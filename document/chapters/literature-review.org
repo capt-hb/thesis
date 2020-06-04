@@ -53,7 +53,7 @@
   it does not have a big enough impact to reduce the overhead of zeroing registers.
   An alternative calling convention could avoid the requirement to clear the entire stack
   by only requiring that the used stack frame must be cleared. This reduces the overhead of clearing
-  the stack and should be an an acceptable overhead. An adjustment to the calling convention using
+  the stack and should be an acceptable overhead. An adjustment to the calling convention using
   local capabilities has been made to take this into account, this modified calling convention uses
   linear capabilities, capabilities that cannot be duplicated and would avoid the need of clearing
   the entire stack \parencite{skorstengaard2019stktokens}.
