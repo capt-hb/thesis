@@ -37,18 +37,11 @@
   #+INCLUDE: ./chapters/covid-19/nl.org :minlevel 2
 
 \newpage
+#+INCLUDE: ./chapters/abstract-en.org :minlevel 1
+#+INCLUDE: ./chapters/abstract-nl.org :minlevel 1
 
-
-# TODO: English Abstract AND Dutch Abstract
-* Abstract
-
-* Introduction
-  Introduce capability machines (more detail of these will be given in the background section, 
-  the need for secure calling conventions and why uninitialized capabilities can help achieve this.
-  Explain what has been achieved in the thesis (added instructions and manually rewritten example(s)
-  of the calling convention with uninit caps) and why uninit caps alone cannot make a secure calling
-  convention.
-
+\newpage
+#+INCLUDE: ./chapters/introduction.org :minlevel 1
 
 \newpage
 #+INCLUDE: ./chapters/literature-review.org :minlevel 1
@@ -72,13 +65,7 @@
 #+INCLUDE: ./chapters/clang-exploration.org :minlevel 1
   
 \newpage
-  
-* Conclusions
-  Mention that uninit caps have been successfully added to the CHERI-MIPS ISA and have been added
-  to the LLVM assembler too. Explain why the LLVM/CLang modifications have not been made but are
-  discussed and that these could be made in future work. Mention that, although uninit caps
-  can contribute to a secure calling convention, it does not make it secure by _just_ using uninit
-  caps.
+#+INCLUDE: ./chapters/conclusion.org :minlevel 1
 
 \newpage
 \printbibliography
