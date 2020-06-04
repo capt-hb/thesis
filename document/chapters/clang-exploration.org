@@ -1,0 +1,90 @@
+* CLang Exploration
+  Due to the time restrictions of the master thesis I was unable to modify the CLang/LLVM compiler.
+  As an alternative, this section will describe the foreseen modifications that will need to
+  be made in the compiler. This section should thus be seen as an exploration of the modifications
+  needed to implement the calling convention in the CLang/LLVM compiler.
+  The files mentioned in this section are relative to the MIPS backend in the LLVM project,
+  /llvm-project/llvm/lib/Target/Mips/.
+  Most of the subsections discussed here correspond to those defined in Chapter [[sec:secure-cc]].
+  
+** Calling Convention
+   First, a calling convention similar to the CHERI purecap calling convention needs to be defined.
+   This can be done in /MipsCallingConv.td/. In the code that follows an enum value will be 
+   available for the new calling convention, for example if we defined the calling convention
+   with the name ~CC_CHERI_PURECAP_UNINIT~, we will have the enum ~CallingConv::CHERI_PURECAP_UNINIT~.
+   Using this enum value we can adjust the code to do things differently if the used calling
+   convention corresponds with ~CallingConv::CHERI_PURECAP_UNINIT~.
+   Alternatively, we could view the current calling convention as the new calling convention
+   and alter the code with the modifications described below always taking place (i.e. the
+   calling convention is not chosen but is always used).
+
+** Store Instructions
+   Stores using capabilities currently happen using the /CSX/ store instructions (those already
+   provided by CHERI-MIPS before uninitialized capabilities were added). These instructions
+   will now have to be the new store instructions (/UCSX/).
+   This change will also require that stores be done differenlty. Remember that the /CSX/ store
+   instructions have no out register, but instead have another general-purpose register that
+   is added to the offset of the capability. A concrete example involves writing to an address in an
+   array:
+   #+begin_src cherimips
+   csw     $2, $1, 0($c2)
+   #+end_src
+   Assume that /$2/ is the register containing the value we want to write, /$1/ is the address within
+   the array (i.e. the $index * size_of_elements$) and /$c2/ is the capability for the array, with
+   its cursor at the base.
+   This realistic example cannot be done directly using the uninitialized store instructions. It
+   requires one additional instruction:
+   #+begin_src cherimips
+   cincoffset $c2, $c2, $1
+   ucsw     $c2, $2, 0($c2)
+   #+end_src
+   The added instruction, ~cincoffset $c2, $c2, $1~, puts the cursor at the address in the array
+   to which we want to write the contents of /$2/. 
+
+   This example shows that instructions using the /CSX/ store instructions can always be transformed
+   into 2 instructions using the uninitialized store instructions. 
+   For stack related loads and stores, the instructions are of the form ~csw $2, $zero, 16($c2)~,
+   where /$zero/ is the register containing all zeroes and /$c2/ the stack capability. These
+   instructions can be directly translated to use the uninitialized store instruction: 
+   ~ucsw $c2, $2, 16($c2)~.
+
+** Invoking A Function
+   # TODO
+   
+** Returning From A Function
+   Returns need to be done with the ~ccall $c1, $c2, 1~ instruction. This modification needs to
+   be done in /MipsISelLowering.cpp/, in the /LowerReturn/ function. At the end of this function
+   the return node is created. The return node created for the new calling convention needs
+   to be a ~ccall~ return node. This selection DAG node still needs to be created, this is
+   similar to the current jump nodes and can be done in /MipsInstrCheri.td/ (should be defined
+   near the ~CapJmpLink~ node definition, it concerns jumps).
+
+** Function Prologue
+   The function prologue is no longer required to decrement the offset of the stack capability,
+   or preserve callee-saved registers (non-argument registers are cleared before the function
+   is invoked). It might be necessary to spill /$c1/ and /$c2/ to the stack, these are the registers
+   containing the return capability and stack capability, these will be needed to return to the caller.
+   
+   These modifications need to be made in /MipsSEFrameLowering.cpp/, in the /emitPrologue/ function.
+
+** Function Epilogue
+   The function epilogue requires a few changes (in the /emitEpilogue/ function of
+   /MipsSEFrameLowering.ccp/). The stack frame of the function
+   needs to be cleared, this means overwriting the stack with zeroes.
+   A loop for this will have to be added to the /emitEpilogue/ function (in /MipsSEFrameLowering.cpp/),
+   that writes zeroes over the entire stack frame. Stack frames are multiples of 32, so we can say
+   that the size of a stack frame is of the form $32x$, where $x = stack_frame_size / 32$. There are
+   a few options for clearing the stack (/$c11/ is the stack capability):
+   - For the 256 bit capability format each ~ucsc $c11, $cnull, y($c11)~ (where y is 0, 1, ..., $x - 1$)
+     will overwrite every 32 bytes with the null capability. This will not write over the stack frame
+     with all zeroes, because the null capability has the otype that are all ones. But no sensitive
+     data or (valid) capabilities will be left on the stack;
+   - Completely zero out the stack by using ~ucsd $c11, $zero, y($c11)~ (where y is 0, 1, ..., $(x * 4) - 1$,
+     32 bytes consist of 4 double words).
+
+   After clearing the stack, the non-return registers still need to be cleared, the epilogue needs to
+   emit the corresponding clear instructions discussed in Section [[sec:function-epilogue]].
+   
+   In the current epilogue, the stack capability offset is incremented again to pop the stack
+   frame. This is no longer needed because the previous stack capability will be available at the
+   caller return site.
