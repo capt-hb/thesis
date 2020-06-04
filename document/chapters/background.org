@@ -106,6 +106,8 @@
     and cannot be used as a normal seal). The cursor itself also needs to be in the bounds
     of the capability used for sealing ($ct$). If these conditions are not met than an exception
     is raised (some other conditions apply too but are irrelevant for the discussion here).
+    The /otype/ of a capability is transparent and can be requested by using the /CGetType/
+    instruction \parencite[Section~8.10]{watson2019capability}.
     
     I will discuss two options to unseal a capability. The first option to unseal a sealed 
     capability is by using the /CUnseal/ instruction, of the format $cunseal cd, cb, ct$ which is

@@ -24,7 +24,10 @@
   capabilities they should not get access to).
   
   The calling convention requires sealing a pair of capabilities (the return capability and
-  stack capability) using a unique seal. By using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]])
+  stack capability) using a unique seal. This unique seal (if the callee can never reconstruct
+  the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
+  attempt to supply a different stack capability or return capability.
+  By using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]])
   it is not necessary to be able to unseal the pair (the ccall instruction will do this if the seals
   of the sealed capability pair is the same). This means that the seals can be obtained by having
   a central "sealing capability" from which a seal can be used and that seal can then be made
@@ -136,7 +139,7 @@
    that indicate a register set to be cleared). CClearRegs takes as a first argument the register 
    set to be cleared. The second argument is a mask indicating which registers of the register set 
    to clear, when a bit of the mask is set, the corresponding register will be cleared (for example,
-   if bit 0 of the  mask is set than the lowest numbererd register in the register set will be cleared)
+   if bit 0 of the  mask is set than the lowest numbered register in the register set will be cleared)
    Clearlo targets the register set /$r0-15/, clearhi register set /$r16-31/, cclearlo register set
    $ddc, /$c1-15/ and cclearhi register set /$c16-31/. In the instructions shown, all registers
    except for /$ddc/, /$c1-2/ and /$c11-12/ are cleared. When arguments are passed in registers to 
