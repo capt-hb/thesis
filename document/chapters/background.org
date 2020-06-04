@@ -80,7 +80,7 @@
 
    #+CAPTION: 256-bit Capability Representation Format
    #+ATTR_LATEX: :width 0.8\textwidth
-   #+NAME: fig:uninit-cap-concept
+   #+NAME: fig:cap-representation
    [[../../figures/original-cap-representation.png]]
    \FloatBarrier
    
@@ -96,7 +96,7 @@
     The definition of sealed capabilities was given in Section [[sec:sealed-capabilities]]. This section
     will explain how CHERI supports sealed capabilities.
     
-    Unsealed capabilities have an /otype/ (see Figure \ref{fig:uninit-cap-concept} of -1, which is
+    Unsealed capabilities have an /otype/ (see Figure \ref{fig:cap-representation} of -1, which is
     the default for all capabilities. A capability can be sealed by using the /CSeal/ instruction,
     which is of the form: ~cseal cd, cb, ct~. $cb$ contains the capability to be sealed and the
     sealed capability will be written to $cd$. The seal itself is taken from the capability residing

@@ -1,7 +1,7 @@
 * Secure Calling Convention
   In the paper "Reasoning About a Machine with Local Capabilities" \parencite{skorstengaard2018reasoning},
   a novel calling convention is proposed by using local capabilities. This calling convention ensures
-  local stack frame encapsulation and well bracketed control flow on a single shared stack. 
+  local stack frame encapsulation and well-bracketed control flow on a single shared stack.
   We propose to continue using this calling convention with the slight modification that the stack
   capability should be made uninitialized on function invocation.
   
