@@ -19,6 +19,7 @@
 #+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
 #+LATEX_HEADER: \promotors{Promotor: Prof. Dr. Dominique Devriese \\ Supervisor: Thomas Van Strydonck \\ Supervisor: Dr. Steven Keuchel}
+#+LATEX_HEADER: \pretitle{Master thesis submitted in partial fulfilment of the requirements for the degree of Master of Science in Applied Sciences and Engineering: Computer Science}
 #+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
 #+LATEX_HEADER: \input{cheri-mips-asm.tex}
 #+LATEX_HEADER: \input{sail.tex}
