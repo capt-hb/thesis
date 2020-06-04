@@ -23,6 +23,7 @@
 #+LATEX_HEADER: \lstset{ keywordstyle=\color{blue} }
 #+LATEX_HEADER: \input{cheri-mips-asm.tex}
 #+LATEX_HEADER: \input{sail.tex}
+#+LATEX_HEADER: \input{tablegen.tex}
 #+LATEX_HEADER: \input{sail_latex/commands.tex}
 #+LATEX_CLASS_OPTIONS: [10pt]
 #+LATEX_HEADER: \addbibresource{references.bib}
@@ -60,32 +61,17 @@
 
 \newpage
 #+INCLUDE: ./chapters/uninit-calling-convention.org :minlevel 1
+
+\newpage
+#+INCLUDE: ./chapters/assembler.org :minlevel 1
+
+\newpage
+#+INCLUDE: ./chapters/evaluation.org :minlevel 1
+
+\newpage
+#+INCLUDE: ./chapters/clang-exploration.org :minlevel 1
   
 \newpage
-* LLVM  
-  Explain that the CHERI-team has a modified version of the LLVM compiler in which the MIPS
-  backend has been extended to CHERI-MIPS.
-
-** Assembler
-   Discuss the changes made to the assembler (added instructions, their intrinsics, ...)
-   
-** CLang
-   Mention the modifications foreseen to implement the calling convention with uninit caps.
-
-* CHERITest: Unit Testing Uninitialized Capabilities Instructions
-  Explain the tests written for the modified and added instructions, as well as what the results
-  of the tests are and what they mean.
-  
-* CHERITest: Modifying the Calling Convention
-  Explain the setup for these tests carefully, compiling C examples into CHERI-MIPS assembly.
-
-** Current Calling Convention
-   Show how the current calling convention works, a good starting point for this is the diagrams
-   created for the simple_call.s file.
-   
-** Calling Convention with Uninitialized Capabilities
-   Show the modifications made to the original calling convention, how these use uninit caps
-   and mention that both assembly programs maintain the original semantics of the C program.
   
 * Conclusions
   Mention that uninit caps have been successfully added to the CHERI-MIPS ISA and have been added
