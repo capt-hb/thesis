@@ -1,0 +1,140 @@
+* Assembler
+  This section will describe the modifications made to the CHERI-MIPS assembler in LLVM.
+  Every file mentioned in this section assumes that the current working directory is \\
+  /llvm-project/llvm/lib/Target/Mips/ 
+  (where llvm-project is the root directory of the repository), unless specified otherwise.
+  The assembler will be used in the evaluation section.
+  
+  \bigskip
+
+  In Section [[sec:new-instructions]] the new instructions were listed and explained. These were
+  then implemented in the CHERI-MIPS simulator. These instructions still need to be added to 
+  the assembler so that they can be correctly encoded into a binary executable file. 
+   
+  The encoding of the new instructions is specified in /MipsInstrCheri.td/. The following code
+  fragment shows the encoding of the /CGetUninit/, /CUninit/ and /CShrink/ instructions:
+  #+begin_src tablegen -n
+   def CGetUninit : CheriFmtCGet<0x15, "uninit">;
+   
+   def CUninit  : CheriFmt2Op<0x1b, (outs CheriOpnd:$r1), (ins CheriOpnd:$r2),
+       "cuninit\t$r1, $r2",
+       [(set CheriOpnd:$r1, (int_cheri_cap_uninit CheriOpnd:$r2))]>
+       
+   def CShrink  : CheriFmt3Op<0x2c, (outs CheriOpnd:$r1), (ins CheriOpnd:$r2, GPR64Opnd:$r3),
+       "cshrink\t$r1, $r2, $r3",
+       [(set CheriOpnd:$r1, (int_cheri_cap_shrink CheriOpnd:$r2, GPR64Opnd:$r3))]>;
+  #+end_src
+   
+  The language used is /TableGen/, which can generate /C++/ code for the definitions and
+  records that are defined in a tablegen file.
+  The above code fragment has 3 definitions. The first definition, /CGetUninit/ is an instance
+  of the record /CheriFmtCGet/, which only requires the value of the /func/ field of the instruction
+  (0x15 in this case) and the name of the instruction (without the /cget/ prefix). This definition
+  will expand to a definition similar to that of /CUninit/, with as intrinsic /int_cheri_cap_uninit_get/. 
+  This intrinsic specifies that the instruction takes one general purpose out register and one
+  capability in register, it also mentions that the instruction does not access memory.
+  The /CUninit/ definition specifies
+  that is a definition for a /CheriFmt2Op/ (cheri format for a 2 operands instruction) record, 
+  with as value for the func field 0x1b. It has 
+  one out register, /$r1/ and one in register /$r2/. The assembly format is specified next, followed
+  by some intrinsins about the registers. The first intrinsic specifies that /$r1/ will be set
+  (i.e. written to) and the second intrinsinc, /int_cheri_cap_uninit/ says that the instruction
+  has one out capability register and one in capability register. The instrinsic also specifies
+  that it does not interact with memory (it only uses registers).
+  The /CShrink/ definition specifies it is of the /CheriFmt3Op/ format, the cheri format for 3 operands
+  instructions, with a single out register and 2 in registers. The instrinsic /int_cheri_cap_shrink/
+  specifies it has one out capability register, one in capability register and one in general purpose
+  register. The intrinsic also specifies it does not access memory.
+  
+  The instrinsics, /int_cheri_cap_uninit_get/, /int_cheri_cap_uninit/ and /int_cheri_cap_shrink/
+  are given for completeness (in /llvm-project/llvm/include/llvm/IR/IntrinsicsCheriCap.td/):
+  #+begin_src tablegen -n
+   def int_cheri_cap_shrink:
+       Intrinsic<[llvm_fatptr_ty],
+		  [llvm_fatptr_ty, llvm_anyint_ty],
+		  [IntrNoMem, IntrWillReturn]>;
+
+   def int_cheri_cap_uninit_get :
+       Intrinsic<[llvm_anyint_ty],
+		  [llvm_fatptr_ty],
+		  [IntrNoMem, IntrWillReturn]>;
+
+   def int_cheri_cap_uninit :
+       Intrinsic<[llvm_fatptr_ty],
+		  [llvm_fatptr_ty],
+		  [IntrNoMem, IntrWillReturn]>;
+  #+end_src
+   
+  Before diving into the defintions of the uninitialized store instructions, I will go over
+  the format they use, /CheriFmtUCSX/, defined in /MipsInstrFormatsCheri.td/:
+  #+begin_src tablegen -n
+   class CheriFmtUCSX<bits<2> t, bits<1> e, dag outs, dag ins, string asmstr,
+		    list<dag> pattern> :
+      MipsInst<outs, ins, asmstr, pattern, NoItinerary, FrmOther>, Sched<[]>
+   {
+       bits<5>  cd;
+       bits<5>  rs;
+       bits<5>  cb;
+       bits<8>  offset;
+  
+       let Opcode = 0x3b;
+       let Inst{25-21} = cd;
+       let Inst{20-16} = rs;
+       let Inst{15-11} = cb;
+       let Inst{10-3}  = offset;
+       let Inst{2}     = e;
+       let Inst{1-0}   = t;
+       let hasSideEffects = 1;
+   }
+  #+end_src
+   
+  This class corresponds to the encoding of the uninitialized store instructions (Figure \ref{fig:ucsx-encoding}).
+   
+  #+CAPTION: UCSX Encoding
+  #+ATTR_LATEX: :width 0.8\textwidth
+  #+NAME: fig:ucsx-encoding
+  [[../../figures/ucsbhwd-encoding.png]]
+  \FloatBarrier
+   
+  The bit specified for the /e/ field will always be 0, but is passed as parameter in case the 
+  extra bit would be needed for something else in the future.
+   
+  The uninitialized store instructions, added in /MipsInstrCheri.td/ are defined as:
+  #+begin_src tablegen -n
+   multiclass UStoreViaCapScaled<bits<2> t, bit e, string instr_asm, RegisterOperand RC, PatFrag storeType, Operand simm, PatFrag immfrag> {
+     def #NAME# : CheriFmtUCSX<t, e,
+		   (outs CheriOpnd:$cd),
+		   (ins RC:$rs, simm:$offset, CheriOpnd0IsDDC:$cb),
+		   !strconcat(instr_asm, "\t$cd, ${rs}, ${offset}(${cb})"),
+		   [(set CheriOpnd:$cd, (storeType (CapRegType (ptradd CheriOpnd0IsDDC:$cb, (i64 immfrag:$offset))), RC:$rs))]>;
+   }
+
+   multiclass UStoreViaCap<bits<2> t, bit e, string instr_asm, RegisterOperand RC, PatFrag storeType> :
+      UStoreViaCapScaled<t, e, instr_asm, RC, storeType, simm8, immSExt8>;
+      
+   defm UCAPSTORE8      : UStoreViaCap<0, 0, "ucsb", GPR64Opnd, truncstorei8>;
+   defm UCAPSTORE16     : UStoreViaCap<1, 0, "ucsh", GPR64Opnd, truncstorei16>;
+   defm UCAPSTORE32     : UStoreViaCap<2, 0, "ucsw", GPR32Opnd, store>;
+   let isCodeGenOnly=1 in {
+     defm UCAPSTORE832      : UStoreViaCap<0, 0, "ucsb", GPR32Opnd, truncstorei8>;
+     defm UCAPSTORE1632     : UStoreViaCap<1, 0, "ucsh", GPR32Opnd, truncstorei16>;
+     defm UCAPSTORE3264     : UStoreViaCap<2, 0, "ucsw", GPR64Opnd, truncstorei32>;
+   }
+   defm UCAPSTORE64     : UStoreViaCap<3, 0, "ucsd", GPR64Opnd, store>;
+  #+end_src
+   
+  Two multiclasses are defined, /UStoreViaCapScaled/ and /UStoreViaCap/ that show the format
+  of the instruction (/CheriFmtUCSX/). This format has one out capability register, one input general
+  purpose register, a signed immediate (the offset) and one more capability register as input.
+  The intrinsics say that register /$cd/ will be written to and that the value of /$rs/
+  will be stored in the memory location calculated from /$cb/ and the offset.
+  Note that in register /$cb/ will be the /$DDC/ register if the register is /$c0/ (the null register),
+  this is for the legacy mips load and store instructions.
+  The difference between /UStoreViaCap/ and /UStoreViaCapScaled/ is that the latter
+  makes it possible to specifiy conditions the offset needs to adhere to. In /UStoreViaCap/ this
+  is the /simm8/ and /immSExt8/ values. These values just mean that the offset is a sign extended
+  immediate of 8 bits. 
+  Starting on line 12, you see the definitions for the different store instructions
+  (defm is used for definitions of a multiclass). You will notice that there are 2 versions
+  of the /ucsb/, /ucsh/ and /ucsw/ instructions. This is to handle the case were the MIPS
+  processor has 32-bits general purpose registers. 
