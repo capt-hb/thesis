@@ -1,0 +1,32 @@
+* Evaluation
+# * CHERITest: Unit Testing Uninitialized Capabilities Instructions
+#  Explain the tests written for the modified and added instructions, as well as what the results
+#  of the tests are and what they mean.
+  
+# * CHERITest: Modifying the Calling Convention
+#  Explain the setup for these tests carefully, compiling C examples into CHERI-MIPS assembly.
+
+# ** Current Calling Convention
+#   Show how the current calling convention works, a good starting point for this is the diagrams
+#   created for the simple_call.s file.
+   
+# ** Calling Convention with Uninitialized Capabilities
+#   Show the modifications made to the original calling convention, how these use uninit caps
+#   and mention that both assembly programs maintain the original semantics of the C program.
+
+** Unit Testing Instructions
+   # TODO
+   # What kind of tests where written? How are they executed (cheritest)?
+   # Where can these tests be found to reproduce them?
+   # Show a small example of how testing an instruction is done/works?
+
+** Calling Convention 
+   # TODO
+   # What kind of evaluations were done?
+   # - Semantics preserved (old cc & new cc have same outputs)
+   # - Stats: epilogue/prologue nr of instrs, call invocation?
+   # - Execution time (simple wrapper around test that measures execution time? remove log files before running tests)
+   # Where to find these tests? (going over each of them would take too much space?)
+   # Present the C examples -> explain what they do, what they show, why they are relevant, ...
+   
+

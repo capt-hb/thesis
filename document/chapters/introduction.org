@@ -1,0 +1,7 @@
+* Introduction
+  # TODO
+  # introduce capability machines
+  # why are secure calling conventions interesting/necessary?
+  # How do uninitialized capabilities contribute to a secure calling convention?
+  # What was done for the master thesis? (modified/new instructions, assembly modified to use
+  # new calling convention)

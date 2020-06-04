@@ -1,0 +1,7 @@
+* Conclusion
+  # TODO
+  # - uninitialized capabilities have been added to the CHERI-MIPS simulator
+  # - Secure Calling Convention using local capabilities and uninitialized capabilities
+  # - Assembler modified
+  # - Evaluation results summary
+  # - CLang Exploration
