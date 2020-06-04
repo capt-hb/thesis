@@ -74,6 +74,7 @@
     was. The only way of lowering the cursor is by using the uninitialized store instructions.
 
 *** New Instructions
+    <<sec:new-instructions>>
     A few new instructions have been added for the implementation of uninitialized capabilities:
 
     \bigskip
@@ -294,7 +295,6 @@
     \sailfclCUninitexecute{}
 
 *** Exceptions
-    # TODO: explain sealing a bit somewhere?
     An exception is raised if the capability in $cb$ is sealed.
 
 \newpage   
