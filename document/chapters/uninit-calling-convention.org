@@ -1,4 +1,5 @@
 * Secure Calling Convention 
+  <<sec:secure-cc>>
   The second contribution of this thesis is a modified version of the calling convention described
   in Section [[sec:lau-cc]] combined with the CHERI calling convention from Section [[sec:cheri-cc]]. 
   The differences are due to the original calling convention using local
@@ -183,6 +184,7 @@
    processing is required in the function prologue.
 
 ** Function Epilogue
+   <<sec:function-epilogue>>
    The instruction sequence for returning from a function in the secure calling convention then
    becomes:
    #+begin_src cherimips -n
