@@ -17,9 +17,12 @@
   - permission to write in $[base, end]$;
   - when writing immediately below the cursor, the cursor will be decremented so that the holder of the 
     uninitialized capability is able to read from the location it has just written to.
-
-  Uninitialized capabilities can thus be used to gives access to arrays that contain uninitialized 
-  data without the need of clearing that uninitialized data first.
+    
+  Uninitialized capabilities let the read range grow towards the base (after writing 
+  immediately below the cursor), this reflects the way the stack grows. For MIPS, the stack
+  grows downwards. If the stack grows upwards, the authority of uninitialized capabilities
+  will need to be adjusted accordingly, having the read permission in $[base, cursor]$ and
+  have it grow towards the end (when writing immediately above the cursor).
 
   The full set of permissions becomes (for a capability machines with local capabilities):
   - *R*: read-only;
