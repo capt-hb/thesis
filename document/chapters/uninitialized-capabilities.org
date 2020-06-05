@@ -149,6 +149,11 @@
    For the modified instructions only the modifications will be given for the template, for
    the complete information of the instruction, please refer to the CHERI technical report \parencite[chapter~7]{watson2019capability}.
    
+   The semantics of each instruction will be shown by its Sail code. Sail is an imperative programming 
+   language that is used to describe instruction set architectures. Sail can generate a simulator
+   from the sail code (in OCaml or C) but can also generate code for theorem provers \parencite[page~167]{watson2019capability}.
+   # TODO: expand a bit more here?
+   
 \newpage   
 ** CL[BHWD][U]
     :PROPERTIES:
