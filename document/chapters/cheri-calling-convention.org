@@ -62,7 +62,6 @@
    - Spill the callee saved registers onto the stack.
 
    # see CSR_Cheri_Purecap in MipsCallingConv.td (with MipsRegisterInfo.td for more reg info)
-   # TODO: add double float FPU registers?
    # NOTE: caller-saved registers are all registers except the callee saved ones
    The callee saved registers are: /$16-23, $28, $30-31, $c17-25/.
 
