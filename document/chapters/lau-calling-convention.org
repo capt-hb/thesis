@@ -68,5 +68,4 @@
    be an old stack capability or return capability which could then be used later on, for example
    to get access to a part of the stack it should not be able to access (in the case of storing an
    old stack capability).
-   # TODO: mention what an adversary is in the introduction
    
