@@ -22,7 +22,33 @@
   
   Having an uninitialized stack capability prevents adversaries from reading from the stack unless
   they first overwrite the uninitialized data (this could be garbage but also sensitive data or 
-  capabilities they should not get access to).
+  capabilities they should not get access to), this scenario is shown in Figure \ref{fig:secure-cc-1}.
+
+  #+CAPTION: Adversaries cannot read without overwriting first
+  #+ATTR_LATEX: :width 1.2\textwidth
+  #+NAME: fig:secure-cc-1
+  [[../../figures/secure-cc-1.png]]
+  \FloatBarrier
+
+  The calling convention aims to have the well-bracketed control flow and local state encapsulation
+  properties. These are defined as:
+  #+begin_quote
+  Well-bracketed control flow (WBCF) expresses that invoked functions must either return to their
+  callers, invoke other functions themselves or diverge, and generally holds in programming
+  languages that do not offer a primitive form of continuations \parencite{skorstengaard2019stktokens}.
+  #+end_quote
+  #+begin_quote
+  Local state encapsulation (LSE) is the guarantee that when a function invokes another function,
+  its local variables (saved on its stack frame) will not be read or modified until the invoked
+  function returns \parencite{skorstengaard2019stktokens}.
+  #+end_quote
+  
+  For WBCF, the calling convention prevents adversaries from jumping to return capabilities
+  that the adversary might have stored on the stack, this was described in Figure \ref{fig:secure-cc-1}.
+  LSE can be achieved by shrinking the range of authority of the stack capability so that it no
+  longer includes the stack frame of the caller. It is also important that the registers are cleared
+  so that no variables or capabilities concerning the stack frame of the caller can be accessed by 
+  the callee.
   
   The calling convention requires sealing a pair of capabilities (the return capability and
   stack capability) using a unique seal. This unique seal (if the callee can never reconstruct
@@ -76,6 +102,11 @@
    Before invoking a function, the caller-saved registers should be saved on the stack.
    Getting the entry point capability for the function to be invoked remains the same as in the
    original CHERI calling convention.
+   One important caveat is that stack frames should begin at addresses that are multiples of 32,
+   this means that if necessary, some zeroes need to be written on the stack to make sure that
+   the cursor of the stack capability that will be passed to the callee is a multiple of 32.
+   Therefore the safe assumption can be made that every stack frame will have a size that
+   is a multiple of 32.
    
    There are a few steps that need to be taken before jumping to the function:
    - the current stack capability needs to be sealed;
