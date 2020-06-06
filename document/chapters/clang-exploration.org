@@ -49,7 +49,21 @@
    ~ucsw $c2, $2, 16($c2)~.
 
 ** Invoking A Function
-   # TODO
+   The modifications for invoking a function will take place in /MipsISelLowering.cpp/, in the
+   ~LowerCall~ function. Nodes will need to be added to the selection DAG for:
+   - Getting a unique seal;
+   - Sealing the stack capability;
+   - Shrinking and uninitializing the stack capability;
+   - Argument spilling (if necessary);
+   - Creating the return capability and sealing it;
+   - Clearing registers.
+
+   After the capability jump node another node needs to be added to move the contents of the
+   /IDC/ register to the capability stack register.
+   One important requirement is that the stack capability should begin at an address that is
+   a multiple of 32, therefore it might be necessary to insert some store instructions if the
+   cursor of the stack capability is not currently a multiple of 32. These store instructions
+   should write beneath the cursor (with an offset of -1) until the cursor is a multiple of 32.
    
 ** Returning From A Function
    Returns need to be done with the ~ccall $c1, $c2, 1~ instruction. This modification needs to
@@ -72,7 +86,8 @@
    /MipsSEFrameLowering.ccp/). The stack frame of the function
    needs to be cleared, this means overwriting the stack with zeroes.
    A loop for this will have to be added to the /emitEpilogue/ function (in /MipsSEFrameLowering.cpp/),
-   that writes zeroes over the entire stack frame. Stack frames are multiples of 32, so we can say
+   that writes zeroes over the entire stack frame. Stack frames start at addresses that are multiples of 32
+   and their size is multiples of 32 too, so we can say
    that the size of a stack frame is of the form $32x$, where $x = stack_frame_size / 32$. There are
    a few options for clearing the stack (/$c11/ is the stack capability):
    - For the 256 bit capability format each ~ucsc $c11, $cnull, y($c11)~ (where y is 0, 1, ..., $x - 1$)
@@ -87,4 +102,4 @@
    
    In the current epilogue, the stack capability offset is incremented again to pop the stack
    frame. This is no longer needed because the previous stack capability will be available at the
-   caller return site.
+   caller's return site.
