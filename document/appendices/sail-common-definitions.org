@@ -1,0 +1,63 @@
+* Sail Common Definitions
+  <<appendix:sail>>
+  
+\sailvalcapToMemBits{}
+
+\sailvalcheckCPTwousable{}
+
+\sailvalgetCapBase{}
+
+\sailvalgetCapCursor{}
+
+\sailvalgetCapOffset{}
+
+\sailvalgetCapTop{}
+
+\sailvalincCapOffset{}
+
+\sailvalisAddressAligned{}
+
+\sailvalMEMwTagged{}
+
+\sailvalMEMwWrapper{}
+
+\sailvalraiseCTwoException{}
+
+\sailvalreadCapReg{}
+
+\sailvalreadCapRegDDC{}
+
+\sailvalrGPR{}
+
+\sailvalsetCapAddr{}
+
+\sailvalsetCapOffset{}
+
+\sailvalshrinkCap{}
+\vspace{-1.5em}
+\begin{adjustwidth}{2em}{}
+    \lstinline`shrinkCap(cap, base, address)` changes the bounds of the capability by setting
+    the base to the given ~base~ and the length of the capability to the given ~address~ minus
+    the new ~base~, $base = base$ and $length = address - base$.
+\end{adjustwidth}
+
+\sailvalSignalExceptionBadAddr{}
+
+\sailvalsigned{}
+
+\sailvalTLBTranslate{}
+
+\sailvalTLBTranslateC{}
+
+\sailvaltoBits{}
+
+\sailvaluninitCap{}
+
+\sailvalunrepCap{}
+
+\sailvalunsigned{}
+
+\sailvalwordWidthBytes{}
+
+\sailvalwriteCapReg{}
+
