@@ -154,6 +154,7 @@
    from the sail code (in OCaml or C) but can also generate code for theorem provers \parencite[page~167]{watson2019capability}.
    The code will be easier to follow with the common definitions by hand, which can be found in
    Section 7.3 of the CHERI ISAv7 technical report \parencite{watson2019capability}. 
+   # TODO: add that section as an appendix? (generated using sail latex export) 
    
 \newpage   
 ** CL[BHWD][U]
