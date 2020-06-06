@@ -146,21 +146,29 @@
    Each instruction will be given with its format, encoding, purpose, description,
    semantics, exceptions and optional notes. This is the same template as used in the CHERI technical
    report \parencite[chapter~7]{watson2019capability}.
-   For the modified instructions only the modifications will be given for the template, for
+   For the modified instructions only the modifications will be given for the template and a small
+   description, for
    the complete information of the instruction, please refer to the CHERI technical report \parencite[chapter~7]{watson2019capability}.
    
    The semantics of each instruction will be shown by its Sail code. Sail is an imperative programming 
    language that is used to describe instruction set architectures. Sail can generate a simulator
    from the sail code (in OCaml or C) but can also generate code for theorem provers \parencite[page~167]{watson2019capability}.
-   The code will be easier to follow with the common definitions by hand, which can be found in
-   Section 7.3 of the CHERI ISAv7 technical report \parencite{watson2019capability}. 
-   # TODO: add that section as an appendix? (generated using sail latex export) 
+   Note that in the semantics section of each instruction, the common definitions are hyperlinks 
+   (in red) to the corresponding type and explanation of a function in Appendix [[appendix:sail]].
+   It is not required to understand these definitions to understand the code, the name of each
+   function should be descriptive enough to understand more or less what it does.
    
 \newpage   
 ** CL[BHWD][U]
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+
+*** Description
+    Load bytes via a capability. The loaded bytes can be sign extended or zero extended, for example: 
+    ~clb $1, $zero, 0($c1)~ will load a single byte, sign extended into register /$1/ from the cursor
+    of capability /$c1/.
+
 *** Semantics
     \sailfclCLoadexecute{}
 
@@ -174,6 +182,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Load capability via a capability.
+
 *** Semantics
     \sailfclCLCexecute{}
 
@@ -187,6 +198,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Set the offset of a capability, i.e. the new cursor becomes $base + offset$.
+
 *** Semantics
     \sailfclCSetOffsetexecute{}
 
@@ -203,6 +217,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Increment the offset of a capability, i.e. the new cursor becomes $cursor + delta$.
+
 *** Semantics
     \sailfclCIncOffsetexecute{}
 
@@ -219,6 +236,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Same as for CIncOffset but with an immediate.
+
 *** Semantics
     \sailfclCIncOffsetImmediateexecute{}
 
@@ -235,6 +255,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Sets the address (= cursor) of a capability.
+
 *** Semantics
     \sailfclCSetAddrexecute{}
 
@@ -252,6 +275,9 @@
     :PROPERTIES:
     :UNNUMBERED:
     :END:
+*** Description
+    Masks the address of a capability, i.e. ~cursor = cursor & supplied_addr~.
+
 *** Semantics
     \sailfclCAndAddrexecute{}
 

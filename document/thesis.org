@@ -17,6 +17,7 @@
 #+LATEX_HEADER: \usepackage{color}
 #+LATEX_HEADER: \usepackage{placeins}
 #+LATEX_HEADER: \usepackage{biblatex}
+#+LATEX_HEADER: \usepackage{changepage}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
 #+LATEX_HEADER: \promotors{Promotor: Prof. Dr. Dominique Devriese \\ Supervisor: Thomas Van Strydonck \\ Supervisor: Dr. Steven Keuchel}
 #+LATEX_HEADER: \pretitle{Master thesis submitted in partial fulfilment of the requirements for the degree of Master of Science in Applied Sciences and Engineering: Computer Science}
@@ -25,8 +26,12 @@
 #+LATEX_HEADER: \input{sail.tex}
 #+LATEX_HEADER: \input{tablegen.tex}
 #+LATEX_HEADER: \input{sail_latex/commands.tex}
+#+LATEX_HEADER: \newcommand{\saildocval}[2]{#2 \vspace{-0.5em} \begin{adjustwidth}{2em}{} #1 \end{adjustwidth}}
+#+LATEX_HEADER: \definecolor{darkred}{rgb}{1.0,0.03,0.0}
+#+LATEX_HEADER: \hypersetup{colorlinks=true,linkcolor=darkred}
 #+LATEX_CLASS_OPTIONS: [10pt]
 #+LATEX_HEADER: \addbibresource{references.bib}
+
 
 \newpage
 * Notice
@@ -69,3 +74,7 @@
 
 \newpage
 \printbibliography
+
+\appendix
+\newpage
+#+INCLUDE: ./appendices/sail-common-definitions.org :minlevel 1
