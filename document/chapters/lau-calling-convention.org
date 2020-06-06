@@ -12,14 +12,20 @@
 ** Invoking A Function
    The first thing to do is to save the used caller-saved registers on the stack.    
 
-   # TODO: skorstengaard2018reasoning contains a nice figure for this, insert + cite!
    As a return capability for the callee we need to create an enter capability (a permissions that
    cannot be used to read, write or execute and a capability with this permissions cannot be modified 
    but they can be jumped to and when jumped to their permission becomes *RX*). To create this
    enter capability we will store the restore instructions on the stack and after these instructions
    our return capability and stack capability. 
    We then create the local enter capability for the restore instructions, return and stack capability.
-   The restore instructions will restore the return and stack capability.
+   The restore instructions will restore the return and stack capability. Figure \ref{fig:local-cap-stack-frame}
+   show what this would look like on the stack.
+
+   #+CAPTION: Stack frame with restore instructions
+   #+ATTR_LATEX: :width 0.5\textwidth
+   #+NAME: fig:local-cap-stack-frame
+   [[../figures/local-cap-stack-frame.png]]
+   \FloatBarrier
    
    Now we can also restrict the stack capability to only cover the unused part of the stack.
    We need to clear this unused part because it may contain data and capabilities left there
