@@ -1,7 +1,60 @@
 * Introduction
+  Capability machines are a special type of processors, instead of having traditional pointers,
+  capability machines offer capabilities to interact with memory. Capabilities are unforgeable 
+  tokens that carry authority to access memory or an object. Conceptually we can view capability
+  machines as a set of permissions, a base address, an end address and a cursor (these denote
+  the range of authority of the capability). While capability machines were an 
+  active topic of research decades ago \parencite{levy2014capability}, the research interest into
+  capability machines has recently been relit by a recently developed capability machine, 
+  CHERI \parencite{watson2019capability}. 
+  One of the biggest interests in capability stems from the security primitives they offer. Because
+  capabilities have permissions and a range of authority, they seem promising to improve the security
+  of processors and operating systems. There have been two recent proposals for alternative calling
+  conventions that are more secure, one using local capabilities \parencite{skorstengaard2018reasoning}
+  and a calling convention using linear capabilities \parencite{skorstengaard2019stktokens}.
+  The calling convention using local capabilities had a considerable overhead regarding stack clearing
+  and the calling convention with linear capabilities doesn't seem trivial to implement in hardware
+  \parencite[Appendix~D.10]{watson2019capability}. 
+  Local capabilities however, have been implemented in capability machines. 
+
+  This thesis focuses on
+  alleviating the stack clearing overhead by introducing a new kind of capability: /uninitialized
+  capabilities/. Uninitialized capabilities prohibit the holder from reading contents from memory
+  to which it has not first written, a only-read-after-write semantics. Having the stack 
+  capability be a local and uninitialized capability would still give it the advantages of the 
+  calling convention with local capabilities and it would get rid of the need to clear the unused part
+  of the stack when an invoked function returns. An adversary (an untrusted piece of code trying to 
+  perform malicious actions) can save a capability in its stack frame and return control to its
+  caller, but because the stack capability is uninitialized, when another adversary is called and
+  tries to access that capability, it can only do so after
+  overwriting it with something else and is thus unable to access that capability.
+  
+  The first contribution of this thesis is the semantics of uninitialized capabilities. Then an 
+  implementation of unitialized capabilities is given for CHERI-MIPS in software (using a simulator).
+  on a realistic capability machine. The modifications made to existing instructions (store instructions,
+  load instructions and instructions modifying the cursor of a capability) are explained and new
+  instructions are described in detail. These new instructions entail seperate store instructions
+  for uninitialized capabilities, an instruction to make a capability uninitialized and an instruction
+  that can shrink the range of authority of a capability (similar to an already existing instruction).
+  These instructions have been tested and work as intended.
+
+  The thesis then focuses on describing a calling convention with both local and uninitialized
+  capabilities. The calling convention is explained and assembly code is given to show how the
+  different parts of the calling convention can be achieved in assembly code for CHERI-MIPS. 
+  The modifications to the assembler of the LLVM project are described, which is used later on
+  in the thesis to evaluate the modified and new instructions for their intended behavior and
+  to test that the new calling convention preserves the semantics of the original program (written
+  in C). The tests for the calling convention consist of two assembly files, one using the original
+  calling convention and one in which the calling convention is modified to be the one described
+  earlier in the thesis (using local and uninitialized capabilities). 
+
   # TODO
-  # introduce capability machines
-  # why are secure calling conventions interesting/necessary?
-  # How do uninitialized capabilities contribute to a secure calling convention?
-  # What was done for the master thesis? (modified/new instructions, assembly modified to use
-  # new calling convention)
+  # Evaluation = outcomes (which stats were gathered/discussed, performance, ...)
+  
+  After the evaluation a section is devoted to discussing the implementation of the calling convention
+  in the CLang/LLVM compiler. This exploration outlines the different parts of the compiler that need
+  to be modified to use the new calling convention. This was not implemented due to time restrictions
+  but the exploration will surely be useful for future work that implements this calling convention
+  or a new calling convention needs to be added in the CLang/LLVM compiler.
+
+
