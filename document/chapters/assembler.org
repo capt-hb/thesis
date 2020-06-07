@@ -37,16 +37,16 @@
   that is a definition for a /CheriFmt2Op/ (cheri format for a 2 operands instruction) record, 
   with as value for the func field 0x1b. It has 
   one out register, /$r1/ and one in register /$r2/. The assembly format is specified next, followed
-  by some intrinsins about the registers. The first intrinsic specifies that /$r1/ will be set
-  (i.e. written to) and the second intrinsinc, /int_cheri_cap_uninit/ says that the instruction
-  has one out capability register and one in capability register. The instrinsic also specifies
+  by some intrinsics about the registers. The first intrinsic specifies that /$r1/ will be set
+  (i.e. written to) and the second intrinsic, /int_cheri_cap_uninit/ says that the instruction
+  has one out capability register and one in capability register. The intrinsic also specifies
   that it does not interact with memory (it only uses registers).
   The /CShrink/ definition specifies it is of the /CheriFmt3Op/ format, the cheri format for 3 operands
-  instructions, with a single out register and 2 in registers. The instrinsic /int_cheri_cap_shrink/
+  instructions, with a single out register and 2 in registers. The intrinsic /int_cheri_cap_shrink/
   specifies it has one out capability register, one in capability register and one in general purpose
   register. The intrinsic also specifies it does not access memory.
   
-  The instrinsics, /int_cheri_cap_uninit_get/, /int_cheri_cap_uninit/ and /int_cheri_cap_shrink/
+  The intrinsics, /int_cheri_cap_uninit_get/, /int_cheri_cap_uninit/ and /int_cheri_cap_shrink/
   are given for completeness (in /llvm-project/llvm/include/llvm/IR/IntrinsicsCheriCap.td/):
   #+begin_src tablegen -n
    def int_cheri_cap_shrink:
@@ -65,7 +65,7 @@
 		  [IntrNoMem, IntrWillReturn]>;
   #+end_src
    
-  Before diving into the defintions of the uninitialized store instructions, I will go over
+  Before diving into the definitions of the uninitialized store instructions, I will go over
   the format they use, /CheriFmtUCSX/, defined in /MipsInstrFormatsCheri.td/:
   #+begin_src tablegen -n
    class CheriFmtUCSX<bits<2> t, bits<1> e, dag outs, dag ins, string asmstr,
@@ -129,9 +129,9 @@
   The intrinsics say that register /$cd/ will be written to and that the value of /$rs/
   will be stored in the memory location calculated from /$cb/ and the offset.
   Note that in register /$cb/ will be the /$DDC/ register if the register is /$c0/ (the null register),
-  this is for the legacy mips load and store instructions.
+  this is for the legacy MIPS load and store instructions.
   The difference between /UStoreViaCap/ and /UStoreViaCapScaled/ is that the latter
-  makes it possible to specifiy conditions the offset needs to adhere to. In /UStoreViaCap/ this
+  makes it possible to specify conditions the offset needs to adhere to. In /UStoreViaCap/ this
   is the /simm8/ and /immSExt8/ values. These values just mean that the offset is a sign extended
   immediate of 8 bits. 
   Starting on line 12, you see the definitions for the different store instructions

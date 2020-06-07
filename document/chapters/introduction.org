@@ -5,7 +5,7 @@
   machines as a set of permissions, a base address, an end address and a cursor (these denote
   the range of authority of the capability). While capability machines were an 
   active topic of research decades ago \parencite{levy2014capability}, the research interest into
-  capability machines has recently been relit by a recently developed capability machine, 
+  capability machines has grown again by a recently developed capability machine, 
   CHERI \parencite{watson2019capability}. 
   One of the biggest interests in capability stems from the security primitives they offer. Because
   capabilities have permissions and a range of authority, they seem promising to improve the security
