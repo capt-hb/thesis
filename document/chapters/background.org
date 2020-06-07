@@ -41,7 +41,7 @@
    (/permissions/, /base/, /end/, /cursor/), this tuple contains the 
    /permissions/ of the capability, the range to which these permissions apply /[base, end]/ and 
    a /cursor/ in that range. 
-   An advantage of capabilities over pointers is that they carry permissons and bounds to access
+   An advantage of capabilities over pointers is that they carry permissions and bounds to access
    memory, whereas a pointer is just a number indicating a memory address with no restrictions,
    this means that capabilities require more bits than pointers.
    Furthermore, the semantics of the C programming language regarding pointers often specifies
