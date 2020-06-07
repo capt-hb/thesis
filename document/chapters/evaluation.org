@@ -196,7 +196,7 @@
     ~test_purecap_uninit_calling_convention~. In the python test files an assertion is made
     that the result of the program is 100. Both tests pass, so the calling convention does
     not alter the semantics of the program.
-    Table \ref{tab:simple-call} shows some interesting statistics about number of instructions of 
+    Table \ref{tab:simple-call} shows some interesting statistics about the number of instructions of 
     each calling convention and the performance (the median in microseconds).
     
     #+CAPTION: Results for the simple function call
@@ -219,3 +219,85 @@
     From this boxplot and the table above we can conclude that the new calling convention is slower
     than the original calling convention, which was expected. 
     
+*** Stack Growth
+    This program has a function that calls another function, requires spilling arguments
+    to the stack and creates capabilities for variables.
+    #+begin_src c -n
+    int g(int *a, int *b) {
+	return (*a) + (*b);
+    }
+
+    int f(int a) {
+	int x = 10;
+	return g(&a, &x);
+    }
+
+    int tmp(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j) {
+	return a + b + c + d + e + f + g + h + i + j;
+    }
+
+    int cap_tmp(int *a, int *b, int *c, int *d, int *e, int *f, int *g, int *h, int *i, int *j) {
+	return (*a) + (*b) + (*c) + (*d) + (*e) + (*f) + (*g) + (*h) + (*i) + (*j);
+    }
+
+    int mixed_tmp(int a, int *b, int c, int *d, int e, int *f, int g, int *h, int i, int *j, int k, int *l) {
+	return a + (*b) + c + (*d) + e + (*f) + g + (*h) + i + (*j);
+    }
+
+    int main(void) {
+	int a = 1;
+	int b = 2;
+	int c = 3;
+	int d = 4;
+	int e = 5;
+	int x = 6;
+	int g = 7;
+	int h = 8;
+	int i = 9;
+	int j = 10;
+	tmp(a, b, c, d, e, x, g, h, i, j);
+	cap_tmp(&a, &b, &c, &d, &e, &x, &g, &h, &i, &j);
+	mixed_tmp(a, &b, c, &d, e, &x, g, &h, i, &j, i, &j);
+	return f(10);
+    }
+    #+end_src
+
+    The ~tmp~ and ~cap_tmp~ functions are interesting because they require
+    argument spilling to the stack (remember that only 8 integers can be passed in general-purpose
+    registers and 8 capabilities in capability registers). ~mixed_tmp~ does not require any argument
+    spilling, it takes 12 parameters but half of them are integers and half capabilities, so these
+    can be passed in registers (6 parameters using general-purpose registers and 6 using capability
+    registers).
+    The ~f~ function calls ~g~ with capabilities for its parameter ~a~ and a local variable ~x~.
+
+    To test the semantics of this program, not only the value of the main function is considered,
+    but the return values from the function calls to ~tmp~, ~cap_tmp~ and ~mixed_tmp~ are also
+    tested to make sure their result remains the same in the original calling convention and the
+    new calling convention. The tests pass for both calling conventions, thus the semantics of the
+    program are preserved.
+
+    Table \ref{tab:stack-growth} shows some interesting statistics about the number of instructions of 
+    each calling convention and the performance (the median in microseconds).
+    
+    #+CAPTION: Results for the simple function call
+    #+NAME: tab:stack-growth
+    #+ATTR_LATEX: :align |c|c|c|
+    |--------------------+--------------+-------------|
+    | Calling Convention | Instructions | Performance |
+    |--------------------+--------------+-------------|
+    | Original           |          393 |   1743.6945 |
+    | Uninit             |          607 |    2296.374 |
+    |--------------------+--------------+-------------|
+    
+    The performance is visualized using a box plot in Figure \ref{fig:simple-call}.
+    #+CAPTION: Boxplot performance of the stack growth program
+    #+NAME: fig:stack-growth
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/boxplot-stack-growth.png]]
+    \FloatBarrier
+    
+    From the boxplot and Table \ref{tab:stack-growth} we learn that the program is slower
+    when more function invocations take place. This makes sense because the calling convention
+    poses an overhead for function calls, instruction sequences that do not perform a function
+    invocation or don't return from a function, are only altered for storing contents on the stack,
+    which should have similar performance to the existing store instructions (CS[BHWD], CSC).
