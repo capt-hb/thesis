@@ -1,0 +1,27 @@
+thesis_do_time() {
+    local IFS="," # join arrays with this delimiter
+    local test=$1
+    local cc=$2
+    local tmp=""
+    local -a performance=()
+    local -a instrpersecond=()
+    local testname="test_purecap_$(echo $cc)_$test"
+
+    for i in {1..20}; do
+	make -s -C "$CHERI/cheritest" clean > /dev/null
+	make -s -C "$CHERI/cheritest" "pytest/sail_cheri_c/tests/purecap/$testname.py" > /dev/null
+	tmp=$(grep 'Nanoseconds elapsed' "$CHERI/cheritest/sail_cheri_c_log/$testname.log" | awk '{ print $3 }')
+	performance+=($tmp)
+	tmp=$(grep 'Instructions per second' "$CHERI/cheritest/sail_cheri_c_log/$testname.log" | awk '{ print $4 }')
+	instrpersecond+=($tmp)
+    done
+
+    echo "$(echo $cc)_performance,$performance"
+    #echo "$(echo $cc)_instrpersecond,$instrpersecond"
+}
+
+thesis_time() {
+    local test=$1
+    thesis_do_time $test "original"
+    thesis_do_time $test "uninit"
+}
