@@ -1,5 +1,7 @@
 * Sail Common Definitions
   <<appendix:sail>>
+  This appendix describes the Sail functions used in the thesis.
+  \bigskip
   
 \sailvalcapToMemBits{}
 
