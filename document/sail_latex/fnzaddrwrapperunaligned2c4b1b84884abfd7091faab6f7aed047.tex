@@ -1,0 +1,15 @@
+function #\hyperref[zaddrWrapperUnaligned]{addrWrapperUnaligned}#(addr, accessType, width) =
+  {
+    let ddc = DDC;
+    #\hyperref[zcheckDDCPerms]{checkDDCPerms}#(ddc, accessType);
+    cursor = #\hyperref[zgetCapCursor]{getCapCursor}#(ddc);
+    vAddr  = (cursor + #\hyperref[zunsigned]{unsigned}#(addr)) % #\hyperref[zpow2]{pow2}#(64);
+    let (waddr, size) = #\hyperref[zunalignedBytesTouched]{unalignedBytesTouched}#(vAddr, width);
+    let (base, top) = #\hyperref[zgetCapBounds]{getCapBounds}#(ddc);
+    if ((waddr + size) > top) then
+      (#\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, 0b00000))
+    else if (waddr < base) then
+      (#\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, 0b00000))
+    else
+      (#\hyperref[ztozybits]{to\_bits}#(64, waddr), size);
+  }

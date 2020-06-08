@@ -1,0 +1,6 @@
+function #\hyperref[zMEMrzytagged]{MEMr\_tagged}# (addr, size, allowTag) =
+{
+  let tag  = if allowTag then #\hyperref[zreadzytagzybool]{read\_tag\_bool}#(addr & cap_addr_mask) else false in
+  let data = #\hyperref[zMEMr]{MEMr}#(addr, size) in
+  (tag, #\hyperref[zreversezyendianness]{reverse\_endianness}#(data))
+}

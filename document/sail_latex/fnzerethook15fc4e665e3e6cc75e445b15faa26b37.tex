@@ -1,0 +1,6 @@
+function #\hyperref[zERETHook]{ERETHook}#() : unit -> unit =
+  {
+    let epcc_val = if (CP0Status.#\hyperref[zERL]{ERL}#() == bitone) then ErrorEPCC else EPCC;
+    let new_pcc = if #\hyperref[zisSentryCap]{isSentryCap}#(epcc_val) then #\hyperref[zunsealCap]{unsealCap}#(epcc_val) else epcc_val;
+    #\hyperref[zsetzynextzypcc]{set\_next\_pcc}#(new_pcc)
+  }

@@ -1,0 +1,16 @@
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let rt_val = #\hyperref[zrGPR]{rGPR}#(rt);
+  let offset = #\hyperref[zgetCapOffset]{getCapOffset}#(cb_val);
+  if cb_val.tag & cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if cb_val.tag & cb_val.uninit & (#\hyperref[zunsigned]{unsigned}#(rt_val) < offset) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_UninitViolation, cb)
+  else
+  {
+    let (success, newCap) = #\hyperref[zsetCapOffset]{setCapOffset}#(cb_val, rt_val);
+    if success then
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+    else
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, #\hyperref[zunrepCap]{unrepCap}#(newCap))
+  }

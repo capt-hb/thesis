@@ -1,0 +1,25 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCCopyType]{CCopyType}#(cd, cb, ct)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let ct_val = #\hyperref[zreadCapReg]{readCapReg}#(ct);
+  let cb_base = #\hyperref[zgetCapBase]{getCapBase}#(cb_val);
+  let cb_top  = #\hyperref[zgetCapTop]{getCapTop}#(cb_val);
+  let ct_otype = #\hyperref[zunsigned]{unsigned}#(ct_val.otype);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not(ct_val.sealed) | #\hyperref[zhasReservedOType]{hasReservedOType}#(ct_val) then
+    #\hyperref[zwriteCapReg]{writeCapReg}#(cd, {null_cap with address = #\hyperref[zsignzyextend]{sign\_extend}#(ct_val.otype)})
+  else if ct_otype < cb_base then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+  else if ct_otype >= cb_top then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+  else
+  {
+    let (success, cap) = #\hyperref[zsetCapOffset]{setCapOffset}#(cb_val, #\hyperref[ztozybits]{to\_bits}#(64, ct_otype - cb_base));
+    assert(success, "CopyType: offset is in bounds so should be representable");
+    #\hyperref[zwriteCapReg]{writeCapReg}#(cd, cap);
+  }
+}

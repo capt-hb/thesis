@@ -1,0 +1,7 @@
+function #\hyperref[zsetzyCP0ErrorEPC]{set\_CP0ErrorEPC}# (v) = {
+  let (representable, newErrorEPCC) = #\hyperref[zsetCapOffset]{setCapOffset}#(ErrorEPCC, v);
+  ErrorEPCC = if representable then
+      {newErrorEPCC with tag = newErrorEPCC.tag & not(newErrorEPCC.sealed)}
+    else
+      #\hyperref[zunrepCap]{unrepCap}#(newErrorEPCC);
+}

@@ -1,0 +1,42 @@
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cs_val = #\hyperref[zreadCapReg]{readCapReg}#(cs);
+  let cb_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(cb);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not (cb_val.permit_store) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitStoreViolation, cb)
+  else if not (cb_val.permit_store_cap) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitStoreCapViolation, cb)
+  else if not (cb_val.permit_store_local_cap) & (cs_val.tag) & not (cs_val.global) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitStoreLocalCapViolation, cb)
+  else
+  {
+    let cursor  = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+    let vAddr   = (cursor + cap_size * #\hyperref[zsigned]{signed}#(offset)) % #\hyperref[zpow2]{pow2}#(64);
+    let vAddr64 = #\hyperref[ztozybits]{to\_bits}#(64, vAddr);
+    if (vAddr + cap_size) > #\hyperref[zgetCapTop]{getCapTop}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if vAddr < #\hyperref[zgetCapBase]{getCapBase}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if (vAddr % cap_size) != 0 then
+      #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(AdES, vAddr64)
+    else
+    {
+      let (pAddr, macr) = #\hyperref[zTLBTranslateC]{TLBTranslateC}#(vAddr64, StoreData);
+      let mtag : bool = match (if cs_val.tag == false then Unrestricted else macr) {
+        Unrestricted => cs_val.tag,
+        Clear => false,
+        Trap  => #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TLBNoStoreCap, cs)
+      };
+      if cb_val.uninit & offset == #\hyperref[zones]{ones}#() then { 
+    	let decr = #\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[znegate]{negate}#(cap_size));
+	let (_, newCap) = #\hyperref[zincCapOffset]{incCapOffset}#(cb_val, decr);
+	#\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap);
+      } else {
+	#\hyperref[zwriteCapReg]{writeCapReg}#(cd, cb_val);
+      };
+      #\hyperref[zMEMwzytagged]{MEMw\_tagged}#(pAddr, cap_size, mtag, #\hyperref[zcapToMemBits]{capToMemBits}#(cs_val))
+    }
+  }

@@ -1,0 +1,8 @@
+function #\hyperref[zMEMwzytaggedzyconditional]{MEMw\_tagged\_conditional}#(addr, size, tag, data) =
+{
+  #\hyperref[zMEMeazyconditional]{MEMea\_conditional}#(addr, size);
+  success = #\hyperref[zMEMvalzyconditional]{MEMval\_conditional}#(addr, size, #\hyperref[zreversezyendianness]{reverse\_endianness}#(data));
+  if success then
+     #\hyperref[zwritezytagzybool]{write\_tag\_bool}#(addr & cap_addr_mask, tag);
+  success;
+}

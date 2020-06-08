@@ -6,4 +6,3 @@ c_files/.idea
 c_files/*.s
 c_files/*.ll
 *.bbl
-document/sail_latex

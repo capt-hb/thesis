@@ -1,0 +1,40 @@
+function #\hyperref[zSignalException]{SignalException}# (ex) = {
+  #\hyperref[ztraceException]{traceException}#(ex);
+  /* Only update EPC and BD if not already in EXL mode */
+  if (~ (CP0Status.#\hyperref[zEXL]{EXL}#())) then 
+  {
+    let epc : #\hyperref[zbits]{bits}#(64) = if (InBranchDelay[0]) then 
+      {
+        CP0Cause->#\hyperref[zBD]{BD}#() = 0b1;
+        PC - 4
+      }
+      else {
+        CP0Cause->#\hyperref[zBD]{BD}#() = 0b0;
+        PC
+      };
+    let (representable, newEPCC) = #\hyperref[zsetCapOffset]{setCapOffset}#(PCC, epc);
+    /* EPCC should almost always be representable because PC should always be nearly in bounds.
+       It might happen if KCC does not include the exception vector which would probably
+       result in an exception loop. */
+    if (not(representable)) then
+      #\hyperref[zprint]{print}#("UNREPRESENTABLE EPCC!");
+    /* Similarly PCC should not be sealed unless EPCC was sealed on ERET or KCC was sealed 
+       on exception */
+    if (newEPCC.sealed) then
+      #\hyperref[zprint]{print}#("SEALED PCC!");
+    /* If either of the above cases happens we clear the tag on EPCC to preserve invariants. */
+    EPCC = if representable & not(newEPCC.sealed) then newEPCC else #\hyperref[zunrepCap]{unrepCap}#(newEPCC);
+  };
+  /* Fill in BadInstr + BadInstrP. */
+  #\hyperref[zupdateBadInstr]{updateBadInstr}#();
+  let vectorOffset = #\hyperref[zexceptionVectorOffset]{exceptionVectorOffset}#(ex);
+  let vectorBase = #\hyperref[zexceptionVectorBase]{exceptionVectorBase}#();
+  /* On CHERI we have to subtract KCC.base so that we end up at the 
+     right absolute vector address after indirecting via new PCC */
+  let kccBase = #\hyperref[zgetCapBase]{getCapBase}#(KCC) in
+  NextPC = vectorBase + #\hyperref[zzzerozyextend]{zero\_extend}#(vectorOffset) - #\hyperref[ztozybits]{to\_bits}#(64, kccBase);
+  #\hyperref[zsetzynextzypcc]{set\_next\_pcc}#(KCC);
+  CP0Cause->#\hyperref[zExcCode]{ExcCode}#() = #\hyperref[zExceptionCode]{ExceptionCode}#(ex);
+  CP0Status->#\hyperref[zEXL]{EXL}#()    = 0b1;
+  throw (#\hyperref[zISAException]{ISAException}#());
+}

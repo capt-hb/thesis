@@ -1,0 +1,23 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCTestSubset]{CTestSubset}#(rd, cb, ct)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(cb);
+  let ct_val = #\hyperref[zreadCapReg]{readCapReg}#(ct);
+  let ct_top   = #\hyperref[zgetCapTop]{getCapTop}#(ct_val);
+  let ct_base  = #\hyperref[zgetCapBase]{getCapBase}#(ct_val);
+  let ct_perms = #\hyperref[zgetCapPerms]{getCapPerms}#(ct_val);
+  let cb_top   = #\hyperref[zgetCapTop]{getCapTop}#(cb_val);
+  let cb_base  = #\hyperref[zgetCapBase]{getCapBase}#(cb_val);
+  let cb_perms = #\hyperref[zgetCapPerms]{getCapPerms}#(cb_val);
+  let result = if cb_val.tag != ct_val.tag then
+                0b0
+           else if ct_base < cb_base then
+                0b0
+           else if ct_top > cb_top then
+                0b0
+           else if (ct_perms & cb_perms) != ct_perms then
+                0b0
+           else
+                0b1;
+  #\hyperref[zwGPR]{wGPR}#(rd) = #\hyperref[zzzerozyextend]{zero\_extend}#(result);
+}

@@ -1,0 +1,6 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetPerm]{CGetPerm}#(rd, cb)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let capVal = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  #\hyperref[zwGPR]{wGPR}#(rd) = #\hyperref[zzzerozyextend]{zero\_extend}#(#\hyperref[zgetCapPerms]{getCapPerms}#(capVal));
+}

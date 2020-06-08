@@ -1,0 +1,6 @@
+function #\hyperref[ztraceException]{traceException}# (ex : Exception) = {
+  if trace then {
+    #\hyperref[zprerr]{prerr}#(" EXCEPTION ");
+    #\hyperref[zprerrzyendline]{prerr\_endline}#(#\hyperref[zstringzyofzyexception]{string\_of\_exception}#(ex));
+  };
+}

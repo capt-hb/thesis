@@ -1,0 +1,41 @@
+function clause #\hyperref[zexecute]{execute}#(#\hyperref[zCJALR]{CJALR}#(cd, cb, link)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  if InBranchDelay then
+     #\hyperref[zSignalException]{SignalException}#(ResI);
+  cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let cb_ptr = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+  let cb_top = #\hyperref[zgetCapTop]{getCapTop}#(cb_val);
+  let cb_base= #\hyperref[zgetCapBase]{getCapBase}#(cb_val);
+  let sentry = #\hyperref[zisSentryCap]{isSentryCap}#(cb_val);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if (cb_val.sealed & not(sentry)) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not (cb_val.permit_execute) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitExecuteViolation, cb)
+  else if cb_ptr < cb_base then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+  else if (cb_ptr + 4) > cb_top then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+  else if (cb_ptr % 4) != 0 then
+    #\hyperref[zSignalException]{SignalException}#(AdEL)
+  else
+  {
+    if sentry then
+       cb_val = #\hyperref[zunsealCap]{unsealCap}#(cb_val);
+    if link then
+    {
+      let (success, linkCap) = #\hyperref[zsetCapOffset]{setCapOffset}#(PCC, PC+8);
+      assert(success, "Link cap should always be representable.");
+      if sentry then {
+        let (success2, sealedLink) = #\hyperref[zsealCap]{sealCap}#(linkCap, #\hyperref[ztozybits]{to\_bits}#(24, otype_sentry));
+        assert(success2, "Sealing should always be possible with current format.");
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, sealedLink);
+      } else
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, linkCap);
+    };
+    #\hyperref[zexecutezybranchzypcc]{execute\_branch\_pcc}#(cb_val);
+  };
+  NextInBranchDelay = 0b1;
+}

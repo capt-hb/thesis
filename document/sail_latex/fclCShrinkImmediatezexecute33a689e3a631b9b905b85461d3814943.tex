@@ -1,0 +1,21 @@
+#\hyperref[zcheckCP2usable]{checkCP2usable}#();
+let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+let base = #\hyperref[zgetCapBase]{getCapBase}#(cb_val);
+let immU = #\hyperref[zunsigned]{unsigned}#(imm);
+let cursor = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+let top = #\hyperref[zgetCapTop]{getCapTop}#(cb_val);
+let newBase = base + immU;
+if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+else if newBase < base then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+else if top < cursor then 
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+else
+{
+    let (success, newCap) = #\hyperref[zshrinkCap]{shrinkCap}#(cb_val, #\hyperref[ztozybits]{to\_bits}#(64, newBase), #\hyperref[ztozybits]{to\_bits}#(65, cursor));
+    if (success) then
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+    else 
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, #\hyperref[zunrepCap]{unrepCap}#(newCap))
+}   

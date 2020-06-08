@@ -1,0 +1,5 @@
+function _set_TLBEntryHiReg_bits (r_ref, v) = {
+    r = __bitfield_deref(r_ref);
+    r.TLBEntryHiReg_chunk_0 = vector_update_subrange(r.TLBEntryHiReg_chunk_0, 63, 0, vector_subrange(v, 63, 0));
+    (*r_ref) = r
+}

@@ -1,0 +1,8 @@
+function #\hyperref[zexecutezybranch]{execute\_branch}# (pc) = {
+  let len = #\hyperref[zgetCapLength]{getCapLength}#(PCC);
+  /* Check the branch is within PCC bounds. Note that PC is offset to
+  base so branches below base will be negative / very large and
+  greater than top. */
+  if #\hyperref[zunsigned]{unsigned}#(pc) + 4 > len then
+    #\hyperref[zraisezyc2zyexceptionzynoreg]{raise\_c2\_exception\_noreg}#(CapEx_LengthViolation);
+  #\hyperref[zexecutezybranchzymips]{execute\_branch\_mips}#(pc); }

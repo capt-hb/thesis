@@ -1,0 +1,31 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCLoadLinked]{CLoadLinked}#(rd, cb, signext, width)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(cb);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not (cb_val.permit_load) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitLoadViolation, cb)
+  else
+  {
+    let 'size   = #\hyperref[zwordWidthBytes]{wordWidthBytes}#(width);
+    let vAddr   = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+    let vAddr64 = #\hyperref[ztozybits]{to\_bits}#(64, vAddr);
+    if (vAddr + size) > #\hyperref[zgetCapTop]{getCapTop}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if vAddr < #\hyperref[zgetCapBase]{getCapBase}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if not (#\hyperref[zisAddressAligned]{isAddressAligned}#(vAddr64, width)) then
+      #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(AdEL, vAddr64)
+    else
+    {
+      let pAddr = #\hyperref[zTLBTranslate]{TLBTranslate}#(vAddr64, LoadData);
+      let memResult : #\hyperref[zbits]{bits}#(64) = #\hyperref[zextendLoad]{extendLoad}#(#\hyperref[zMEMrzyreservezywrapper]{MEMr\_reserve\_wrapper}#(pAddr, size), signext);
+      CP0LLBit  = 0b1;
+      CP0LLAddr = pAddr;
+      #\hyperref[zwGPR]{wGPR}#(rd) = memResult;
+    }
+  }
+}

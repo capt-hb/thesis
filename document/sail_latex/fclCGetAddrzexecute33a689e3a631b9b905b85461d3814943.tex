@@ -1,0 +1,6 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetAddr]{CGetAddr}#(rd, cb)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let capVal = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  #\hyperref[zwGPR]{wGPR}#(rd) = capVal.address;
+}

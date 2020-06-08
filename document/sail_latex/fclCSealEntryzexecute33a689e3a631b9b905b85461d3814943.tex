@@ -1,0 +1,22 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCSealEntry]{CSealEntry}#(cd, cs)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cs_val = #\hyperref[zreadCapReg]{readCapReg}#(cs);
+  let cs_cursor = #\hyperref[zgetCapCursor]{getCapCursor}#(cs_val);
+  let cs_top    = #\hyperref[zgetCapTop]{getCapTop}#(cs_val);
+  let cs_base   = #\hyperref[zgetCapBase]{getCapBase}#(cs_val);
+  if not (cs_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cs)
+  else if cs_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cs)
+  else if not (cs_val.permit_execute) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitExecuteViolation, cs)
+  else
+  {
+    let (success, newCap) = #\hyperref[zsealCap]{sealCap}#(cs_val, #\hyperref[ztozybits]{to\_bits}#(24, otype_sentry));
+    if not (success) then
+        #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_InexactBounds, cs)
+    else
+        #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+  }
+}

@@ -1,0 +1,6 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetOffset]{CGetOffset}#(rd, cb)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let capVal = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  #\hyperref[zwGPR]{wGPR}#(rd) = #\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[zgetCapOffset]{getCapOffset}#(capVal));
+}

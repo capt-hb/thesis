@@ -1,0 +1,21 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCSetCID]{CSetCID}#(cb)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not (cb_val.permit_set_CID) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitSetCIDViolation, cb)
+  else
+  {
+    let addr = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+    if addr < #\hyperref[zgetCapBase]{getCapBase}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if addr >= #\hyperref[zgetCapTop]{getCapTop}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else
+      CID = #\hyperref[ztozybits]{to\_bits}#(64, addr);
+  }
+}

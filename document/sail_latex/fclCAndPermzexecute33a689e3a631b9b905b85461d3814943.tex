@@ -1,0 +1,16 @@
+function clause #\hyperref[zexecute]{execute}#(#\hyperref[zCAndPerm]{CAndPerm}#(cd, cb, rt)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let rt_val = #\hyperref[zrGPR]{rGPR}#(rt);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else
+  {
+    let perms   = #\hyperref[zgetCapPerms]{getCapPerms}#(cb_val);
+    let newCap  = #\hyperref[zsetCapPerms]{setCapPerms}#(cb_val, (perms & rt_val[30..0]));
+    #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap);
+  }
+}

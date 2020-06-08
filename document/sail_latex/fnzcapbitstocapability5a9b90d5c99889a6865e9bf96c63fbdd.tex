@@ -1,0 +1,25 @@
+function #\hyperref[zcapBitsToCapability]{capBitsToCapability}#(tag, capBits) : (bool, CapBits) -> Capability =
+  struct {
+    tag                        = tag,
+    padding                    = capBits[255..249],
+    uninit                     = capBits[248],
+    otype                      = capBits[247..224],
+    uperms                     = capBits[223..208],
+    perm_reserved12_14         = capBits[207..205],
+    permit_set_CID             = capBits[204],
+    access_system_regs         = capBits[203],
+    permit_unseal              = capBits[202],
+    permit_ccall               = capBits[201],
+    permit_seal                = capBits[200],
+    permit_store_local_cap     = capBits[199],
+    permit_store_cap           = capBits[198],
+    permit_load_cap            = capBits[197],
+    permit_store               = capBits[196],
+    permit_load                = capBits[195],
+    permit_execute             = capBits[194],
+    global                     = capBits[193],
+    sealed                     = capBits[192],
+    address                    = capBits[191..128],
+    base                       = capBits[127..64],
+    length                     = capBits[63..0]
+  }

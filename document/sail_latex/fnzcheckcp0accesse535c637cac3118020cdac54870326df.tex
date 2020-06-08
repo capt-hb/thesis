@@ -1,0 +1,10 @@
+function #\hyperref[zcheckCP0Access]{checkCP0Access}# () =
+  {
+    let accessLevel = #\hyperref[zgetAccessLevel]{getAccessLevel}#() in
+    if ((accessLevel != Kernel) & (~(CP0Status.#\hyperref[zCU]{CU}#()[0]))) then
+      {
+        CP0Cause->#\hyperref[zCE]{CE}#() = 0b00;
+        #\hyperref[zSignalException]{SignalException}#(CpU);
+      };
+    #\hyperref[zcheckCP0AccessHook]{checkCP0AccessHook}#();
+  }

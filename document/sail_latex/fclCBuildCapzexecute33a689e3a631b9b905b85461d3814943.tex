@@ -1,0 +1,36 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCBuildCap]{CBuildCap}#(cd, cb, ct)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(cb);
+  let ct_val = #\hyperref[zreadCapReg]{readCapReg}#(ct);
+  let cb_base = #\hyperref[zgetCapBase]{getCapBase}#(cb_val);
+  let ct_base = #\hyperref[zgetCapBase]{getCapBase}#(ct_val);
+  let cb_top = #\hyperref[zgetCapTop]{getCapTop}#(cb_val);
+  let ct_top = #\hyperref[zgetCapTop]{getCapTop}#(ct_val);
+  let cb_perms = #\hyperref[zgetCapPerms]{getCapPerms}#(cb_val);
+  let ct_perms = #\hyperref[zgetCapPerms]{getCapPerms}#(ct_val);
+  let ct_offset = #\hyperref[zgetCapOffset]{getCapOffset}#(ct_val);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if ct_base < cb_base then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+  else if ct_top > cb_top then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+   else if ct_base > ct_top then /* check for length < 0 - possible because ct might be untagged */
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, ct)
+   else if (ct_perms & cb_perms) != ct_perms then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_UserDefViolation, cb)
+  else
+  {
+    let (exact, cd1) = #\hyperref[zsetCapBounds]{setCapBounds}#(cb_val, #\hyperref[ztozybits]{to\_bits}#(64, ct_base), #\hyperref[ztozybits]{to\_bits}#(65, ct_top));
+    let (representable, cd2) = #\hyperref[zsetCapOffset]{setCapOffset}#(cd1, #\hyperref[ztozybits]{to\_bits}#(64, ct_offset));
+    let cd3 = #\hyperref[zsetCapPerms]{setCapPerms}#(cd2, ct_perms);
+    {
+      assert(exact, "CBuildCap: setCapBounds was not exact"); /* base and top came from ct originally so will be exact */
+      assert(representable, "CBuildCap: offset was not representable"); /* similarly offset should be representable XXX except for fastRepCheck */
+      #\hyperref[zwriteCapReg]{writeCapReg}#(cd, cd3);
+    }
+  }
+}

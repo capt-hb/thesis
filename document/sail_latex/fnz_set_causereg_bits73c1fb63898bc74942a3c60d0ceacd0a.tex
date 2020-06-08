@@ -1,0 +1,5 @@
+function _set_CauseReg_bits (r_ref, v) = {
+    r = __bitfield_deref(r_ref);
+    r.CauseReg_chunk_0 = vector_update_subrange(r.CauseReg_chunk_0, 31, 0, vector_subrange(v, 31, 0));
+    (*r_ref) = r
+}

@@ -1,0 +1,16 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCCheckType]{CCheckType}#(cs, cb)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cs_val = #\hyperref[zreadCapReg]{readCapReg}#(cs);
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  if not (cs_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cs)
+  else if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if not(cs_val.sealed) | #\hyperref[zhasReservedOType]{hasReservedOType}#(cs_val) then /* XXX should make latter a TypeViolation? */
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cs)
+  else if not(cb_val.sealed) | #\hyperref[zhasReservedOType]{hasReservedOType}#(cb_val) then  /* XXX should make latter a TypeViolation? */
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if cs_val.otype != cb_val.otype then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TypeViolation, cs)
+}

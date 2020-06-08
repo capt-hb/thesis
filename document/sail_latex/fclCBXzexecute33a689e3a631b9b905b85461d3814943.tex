@@ -1,0 +1,13 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCBX]{CBX}#(cb, imm, notset)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  if InBranchDelay then
+     #\hyperref[zSignalException]{SignalException}#(ResI);
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  if cb_val.tag ^ notset then
+  {
+    let offset : #\hyperref[zbits]{bits}#(64) = #\hyperref[zsignzyextend]{sign\_extend}#(imm @ 0b00) + 4;
+    #\hyperref[zexecutezybranch]{execute\_branch}#(PC + offset);
+  };
+  NextInBranchDelay = 0b1;
+}

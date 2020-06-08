@@ -1,0 +1,20 @@
+function clause #\hyperref[zexecute]{execute}#(#\hyperref[zCPtrCmp]{CPtrCmp}#(rd, cb, ct, op)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let ct_val = #\hyperref[zreadCapReg]{readCapReg}#(ct);
+  let equal : bool = cb_val.address == ct_val.address;
+  let ltu : bool = cb_val.address <_u ct_val.address;
+  let lts : bool = cb_val.address <_s ct_val.address;
+  let cmp : bool = match op {
+    CEQ    => equal,
+    CNE    => not (equal),
+    CLT    => lts,
+    CLE    => lts | equal,
+    CLTU   => ltu,
+    CLEU   => ltu | equal,
+    CEXEQ  => cb_val == ct_val,
+    CNEXEQ => cb_val != ct_val
+  };
+  #\hyperref[zwGPR]{wGPR}#(rd) = #\hyperref[zzzerozyextend]{zero\_extend}# (cmp)
+}

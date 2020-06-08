@@ -1,0 +1,35 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCWriteHwr]{CWriteHwr}#(cb, sel)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let (needSup, needAccessSys) : (bool, bool) = match #\hyperref[zunsigned]{unsigned}#(sel) {
+    0  => (false, false), /* DDC   -- no access control */
+    1  => (false, false), /* CULR -- no access control */
+    8  => (false, true),  /* CPLR -- privileged TLS */
+    22 => (true, true),   /* KR1C */
+    23 => (true, true),   /* KR2C */
+    28 => (true, true),   /* ErrorEPCC */
+    29 => (true, true),   /* KCC */
+    30 => (true, true),   /* KDC */
+    31 => (true, true),   /* EPCC */
+    _  => #\hyperref[zSignalException]{SignalException}#(ResI)
+  };
+  if needAccessSys & not(#\hyperref[zpcczyaccesszysystemzyregs]{pcc\_access\_system\_regs}#()) then
+     #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_AccessSystemRegsViolation, sel)
+  else if needSup & not(#\hyperref[zgrantsAccess]{grantsAccess}#(#\hyperref[zgetAccessLevel]{getAccessLevel}#(), Supervisor)) then
+     #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_AccessSystemRegsViolation, sel)
+  else {
+    let capVal = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+    match #\hyperref[zunsigned]{unsigned}#(sel) {
+      0  => DDC  = capVal,
+      1  => CULR = capVal,
+      8  => CPLR = capVal,
+      22 => KR1C = capVal,
+      23 => KR2C = capVal,
+      28 => ErrorEPCC = capVal,
+      29 => KCC  = capVal,
+      30 => KDC  = capVal,
+      31 => EPCC = capVal,
+      _  => assert(false, "CWriteHwr: should be unreachable code")
+    };
+  };
+}

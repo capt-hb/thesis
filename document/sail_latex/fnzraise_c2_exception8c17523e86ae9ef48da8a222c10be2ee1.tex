@@ -1,0 +1,15 @@
+function #\hyperref[zraisezyc2zyexception8]{raise\_c2\_exception8}#(capEx, regnum) =
+  {
+    if trace then {
+      #\hyperref[zprerr]{prerr}#(" C2Ex ");
+      #\hyperref[zprerr]{prerr}#(#\hyperref[zstringzyofzycapex]{string\_of\_capex}#(capEx));
+      #\hyperref[zprerr]{prerr}#(" reg: ");
+      #\hyperref[zprerrzyendline]{prerr\_endline}#(#\hyperref[zBitStr]{BitStr}#(regnum));
+    };
+    CapCause->#\hyperref[zExcCode]{ExcCode}#() = #\hyperref[zCapExCode]{CapExCode}#(capEx);
+    CapCause->#\hyperref[zRegNum]{RegNum}#()  = regnum;
+    let mipsEx = 
+      if ((capEx == CapEx_CallTrap) | (capEx == CapEx_ReturnTrap)) 
+      then C2Trap else C2E in
+    #\hyperref[zSignalException]{SignalException}#(mipsEx);
+  }

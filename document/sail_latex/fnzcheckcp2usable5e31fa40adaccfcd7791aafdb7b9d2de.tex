@@ -1,0 +1,5 @@
+function #\hyperref[zcheckCP2usable]{checkCP2usable}# ()  =
+  if not (CP0Status.#\hyperref[zCU]{CU}#()[2]) then {
+    CP0Cause->#\hyperref[zCE]{CE}#() = 0b10;
+    #\hyperref[zSignalException]{SignalException}#(CpU);
+  }

@@ -1,0 +1,7 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetPCC]{CGetPCC}#(cd)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let (success, pcc) = #\hyperref[zsetCapOffset]{setCapOffset}#(PCC, PC);
+  assert (success, "PCC with offset PC should always be representable");
+  #\hyperref[zwriteCapReg]{writeCapReg}#(cd, pcc);
+}

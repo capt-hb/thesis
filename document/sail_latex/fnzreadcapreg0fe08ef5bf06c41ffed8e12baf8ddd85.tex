@@ -1,0 +1,6 @@
+function #\hyperref[zreadCapReg]{readCapReg}#(n) =
+  if (n == 0b00000) then
+    null_cap
+  else
+    let i = #\hyperref[zunsigned]{unsigned}#(n) in
+    *(CapRegs[i])

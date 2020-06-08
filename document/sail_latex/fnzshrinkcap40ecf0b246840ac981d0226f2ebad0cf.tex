@@ -1,0 +1,3 @@
+function #\hyperref[zshrinkCap]{shrinkCap}#(cap, base, address) =
+    let length : #\hyperref[zbits]{bits}#(65) = address - (0b0 @ base) in
+    (true, {cap with base = base, length = length[63..0]})

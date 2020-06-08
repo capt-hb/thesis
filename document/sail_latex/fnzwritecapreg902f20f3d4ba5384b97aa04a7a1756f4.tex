@@ -1,0 +1,29 @@
+function #\hyperref[zwriteCapReg]{writeCapReg}#(n, cap) =
+  if (n == 0b00000) then
+    ()
+  else {
+    let i = #\hyperref[zunsigned]{unsigned}#(n);
+    if trace then {
+      #\hyperref[zprerr]{prerr}#(#\hyperref[zstringzyofzyint]{string\_of\_int}#(i));
+      #\hyperref[zprerr]{prerr}#(" <- ");
+      #\hyperref[zprerrzyendline]{prerr\_endline}#(#\hyperref[zcapToString]{capToString}#(cap, false));
+      /* Additionally check that the cap we are storing is in normal
+         form i.e. it is unchanged by round-tripping through bits.
+         This is quite a strong check because caps might differ from
+         normal form in ways that don't really #\hyperref[zmatter]{matter}# (e.g. otype
+         non-zero for unsealed capability) but it is probably a good
+         idea to maintain this invariant. It's disabled if not tracing
+         because it is slow. We might be able to eliminate the
+         non-normal values with a better type... */
+      let cap2 = #\hyperref[zcapBitsToCapability]{capBitsToCapability}#(cap.tag, #\hyperref[zcapToBits]{capToBits}#(cap));
+      if (cap != cap2) then {
+        #\hyperref[zprerrzyendline]{prerr\_endline}#("Wrote non-normal cap:");
+        #\hyperref[zprerrzyendline]{prerr\_endline}#(#\hyperref[zcapToString]{capToString}#(cap, false));
+        #\hyperref[zprerrzyendline]{prerr\_endline}#(#\hyperref[zcapToString]{capToString}#(cap2, false));
+        assert(false, "wrote non-normal capability");
+      };
+    } else {
+      #\hyperref[zskipzyescape]{skip\_escape}#();
+    };
+    (*CapRegs[i]) = cap;
+  }

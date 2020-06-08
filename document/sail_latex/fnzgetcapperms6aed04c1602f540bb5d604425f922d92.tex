@@ -1,0 +1,6 @@
+function #\hyperref[zgetCapPerms]{getCapPerms}#(cap) = 
+  (
+    cap.uperms
+      @ 0b000 /* reserved */
+      @ #\hyperref[zgetCapHardPerms]{getCapHardPerms}#(cap)
+  )

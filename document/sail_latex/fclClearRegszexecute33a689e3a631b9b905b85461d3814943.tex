@@ -1,0 +1,16 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zClearRegs]{ClearRegs}#(regset, m)) =
+{
+  if ((regset == CLo) | (regset == CHi)) then
+    #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  foreach (i from 0 to 15)
+    if (m[i]) then
+      match regset {
+        GPLo  => #\hyperref[zwGPR]{wGPR}#(#\hyperref[ztozybits]{to\_bits}#(5, i)) = #\hyperref[zzzeros]{zeros}#(),
+        GPHi  => #\hyperref[zwGPR]{wGPR}#(#\hyperref[ztozybits]{to\_bits}#(5, i+16)) = #\hyperref[zzzeros]{zeros}#(),
+        CLo   => if i == 0 then
+                   DDC = null_cap
+                 else
+                   #\hyperref[zwriteCapReg]{writeCapReg}#(#\hyperref[ztozybits]{to\_bits}#(5, i)) = null_cap,
+        CHi   => #\hyperref[zwriteCapReg]{writeCapReg}#(#\hyperref[ztozybits]{to\_bits}#(5, i+16)) = null_cap
+      }
+}

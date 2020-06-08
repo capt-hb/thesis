@@ -1,0 +1,9 @@
+#\hyperref[zcheckCP2usable]{checkCP2usable}#();
+let cap  = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+if cap.sealed then
+  #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+else
+{
+  let newCap = #\hyperref[zuninitCap]{uninitCap}#(cap);
+  #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+}

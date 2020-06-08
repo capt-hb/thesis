@@ -1,0 +1,21 @@
+function #\hyperref[zTLBTranslateC]{TLBTranslateC}# (vAddr, accessType) = 
+  {
+    let currentAccessLevel = #\hyperref[zgetAccessLevel]{getAccessLevel}#() in
+    let compat32 = (vAddr[61..31] == 0b1111111111111111111111111111111) in
+    let (requiredLevel, addr) : (AccessLevel, #\hyperref[zoption]{option}#(#\hyperref[zbits]{bits}#(64))) = #\hyperref[zMIPSSegmentOf]{MIPSSegmentOf}#(vAddr)
+    in
+    if not(#\hyperref[zgrantsAccess]{grantsAccess}#(currentAccessLevel, requiredLevel)) then
+      #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(if (accessType == StoreData) then AdES else AdEL, vAddr)
+    else
+      let (pa, c) : (#\hyperref[zbits]{bits}#(64), MemAccessCapRestriction) = match addr {
+        #\hyperref[zSome]{Some}#(a) => (a, Unrestricted),
+        #\hyperref[zNone]{None}#()  => if ((~(compat32)) & (#\hyperref[zunsigned]{unsigned}#(vAddr[61..0]) > MAX_VA)) then
+            #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(if (accessType == StoreData) then AdES else AdEL, vAddr)
+          else
+            #\hyperref[zTLBTranslate2]{TLBTranslate2}#(vAddr, accessType, requiredLevel)
+      }
+      in if (#\hyperref[zunsigned]{unsigned}#(pa) > MAX_PA) then
+          #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(if (accessType == StoreData) then AdES else AdEL, vAddr)
+        else
+          (pa, c)
+  }

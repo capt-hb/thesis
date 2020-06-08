@@ -1,0 +1,10 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetPCCSetAddr]{CGetPCCSetAddr}#(cd, rs)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let rs_val = #\hyperref[zrGPR]{rGPR}#(rs);
+  let (success, newCap) = #\hyperref[zsetCapAddr]{setCapAddr}#(PCC, rs_val);
+  if success then
+      #\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+  else
+      #\hyperref[zwriteCapReg]{writeCapReg}#(cd, #\hyperref[zunrepCap]{unrepCap}#(newCap))
+}

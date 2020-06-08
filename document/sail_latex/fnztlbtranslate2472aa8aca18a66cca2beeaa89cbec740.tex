@@ -1,0 +1,48 @@
+function #\hyperref[zTLBTranslate2]{TLBTranslate2}# (vAddr, accessType, accessLevel) = {
+  let idx = #\hyperref[ztlbSearch]{tlbSearch}#(vAddr) in
+  match idx {
+    #\hyperref[zSome]{Some}#(idx) =>
+      let i as atom(_) = #\hyperref[zunsigned]{unsigned}#(idx) in
+      let entry = *TLBEntries[i] in
+      let entryMask = entry.#\hyperref[zpagemask]{pagemask}#() in
+      let 'evenOddBit : range(12,28) = match (entryMask) {
+        0x0000  => 12,
+        0x0003  => 14,
+        0x000f  => 16,
+        0x003f  => 18,
+        0x00ff  => 20,
+        0x03ff  => 22,
+        0x0fff  => 24,
+        0x3fff  => 26,
+        0xffff  => 28,
+        _       => undefined
+      } in
+      let isOdd = (vAddr[evenOddBit]) in
+      let (caps : #\hyperref[zbits]{bits}#(1), caplg : #\hyperref[zbits]{bits}#(1), capl : #\hyperref[zbits]{bits}#(1), pfn : #\hyperref[zbits]{bits}#(24), d : #\hyperref[zbits]{bits}#(1), v : #\hyperref[zbits]{bits}#(1))  =
+        if (isOdd) then
+          (entry.#\hyperref[zcaps1]{caps1}#(), entry.#\hyperref[zcaplg1]{caplg1}#(), entry.#\hyperref[zcapl1]{capl1}#(), entry.#\hyperref[zpfn1]{pfn1}#(), entry.#\hyperref[zd1]{d1}#(), entry.#\hyperref[zv1]{v1}#())
+        else
+          (entry.#\hyperref[zcaps0]{caps0}#(), entry.#\hyperref[zcaplg0]{caplg0}#(), entry.#\hyperref[zcapl0]{capl0}#(), entry.#\hyperref[zpfn0]{pfn0}#(), entry.#\hyperref[zd0]{d0}#(), entry.#\hyperref[zv0]{v0}#()) in
+      if (~(v)) then
+        #\hyperref[zSignalExceptionTLB]{SignalExceptionTLB}#(if (accessType == StoreData) then XTLBInvS else XTLBInvL, vAddr)
+      else if ((accessType == StoreData) & ~(d)) then
+        #\hyperref[zSignalExceptionTLB]{SignalExceptionTLB}#(TLBMod, vAddr)
+      else
+        let res : #\hyperref[zbits]{bits}#(64) = #\hyperref[zzzerozyextend]{zero\_extend}#(pfn[23..(evenOddBit - 12)] @ vAddr[(evenOddBit - 1) .. 0]) in
+        let macr = if (accessType == StoreData) then
+                    if caps then Trap else Unrestricted
+                   else
+                    if capl then Clear
+                    else
+                        let gclg : #\hyperref[zbits]{bits}#(1) = match accessLevel {
+                            User => TLBEntryHi.#\hyperref[zCLGU]{CLGU}#(),
+                            Supervisor => TLBEntryHi.#\hyperref[zCLGS]{CLGS}#(),
+                            Kernel => TLBEntryHi.#\hyperref[zCLGK]{CLGK}#()
+                        } in
+                        if gclg != caplg then Trap else Unrestricted
+          in
+        (res,  macr),
+    #\hyperref[zNone]{None}#()  =>  #\hyperref[zSignalExceptionTLB]{SignalExceptionTLB}#(
+      if (accessType == StoreData) then XTLBRefillS else XTLBRefillL, vAddr)
+  }
+}

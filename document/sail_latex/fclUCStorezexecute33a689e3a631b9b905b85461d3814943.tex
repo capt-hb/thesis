@@ -1,0 +1,40 @@
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cb_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(cb);
+  if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if not (cb_val.permit_store) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitStoreViolation, cb)
+  else
+  {
+    let size   = #\hyperref[zwordWidthBytes]{wordWidthBytes}#(width);
+    let cursor = #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val);
+    let vAddr  = (cursor + size * #\hyperref[zsigned]{signed}#(offset)) % #\hyperref[zpow2]{pow2}#(64);
+    let vAddr64= #\hyperref[ztozybits]{to\_bits}#(64, vAddr);
+    if (vAddr + size) > #\hyperref[zgetCapTop]{getCapTop}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if vAddr < #\hyperref[zgetCapBase]{getCapBase}#(cb_val) then
+      #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cb)
+    else if not (#\hyperref[zisAddressAligned]{isAddressAligned}#(vAddr64, width)) then
+      #\hyperref[zSignalExceptionBadAddr]{SignalExceptionBadAddr}#(AdES, vAddr64)
+    else
+    {
+      let pAddr  = #\hyperref[zTLBTranslate]{TLBTranslate}#(vAddr64, StoreData);
+      let rs_val = #\hyperref[zrGPR]{rGPR}#(rs);
+      if cb_val.uninit & offset == #\hyperref[zones]{ones}#() then { 
+	let decr = #\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[znegate]{negate}#(size));
+	let (_, newCap) = #\hyperref[zincCapOffset]{incCapOffset}#(cb_val, decr);
+	#\hyperref[zwriteCapReg]{writeCapReg}#(cd, newCap)
+      } else {
+	#\hyperref[zwriteCapReg]{writeCapReg}#(cd, cb_val);
+      };
+      match width
+      {
+        B  => #\hyperref[zMEMwzywrapper]{MEMw\_wrapper}#(pAddr, 1) = rs_val[7..0],
+        H  => #\hyperref[zMEMwzywrapper]{MEMw\_wrapper}#(pAddr, 2) = rs_val[15..0],
+        W  => #\hyperref[zMEMwzywrapper]{MEMw\_wrapper}#(pAddr, 4) = rs_val[31..0],
+        D  => #\hyperref[zMEMwzywrapper]{MEMw\_wrapper}#(pAddr, 8) = rs_val
+      }
+    }
+  }

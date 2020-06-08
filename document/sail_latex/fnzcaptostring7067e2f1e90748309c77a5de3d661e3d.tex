@@ -1,0 +1,23 @@
+function #\hyperref[zcapToString]{capToString}# (cap, fixlen) = {
+         #\hyperref[zskipzyescape]{skip\_escape}#(); /* because cheri128 getCapX functions contain asserts but cheri256 ones do not */
+         len = #\hyperref[zgetCapLength]{getCapLength}#(cap);
+         /* When dumping caps at end of test we cap length at 64 bits for compatibility with test suite, when tracing we print the actual value */
+         len_str = if fixlen then #\hyperref[zBitStr]{BitStr}#(#\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[zmin]{min}#(len, #\hyperref[zMAX]{MAX}#(64)))) else #\hyperref[zBitStr]{BitStr}#(#\hyperref[ztozybits]{to\_bits}#(68, len));
+         /* Print architectural type which is -1 for unsealed caps */
+         let otype64 : #\hyperref[zbits]{bits}#(64) = if #\hyperref[zhasReservedOType]{hasReservedOType}#(cap) then #\hyperref[zsignzyextend]{sign\_extend}#(cap.otype) else #\hyperref[zzzerozyextend]{zero\_extend}#(cap.otype);
+         #\hyperref[zconcatzystr]{concat\_str}#(" t:",
+         #\hyperref[zconcatzystr]{concat\_str}#(if cap.tag then "1" else "0",
+         #\hyperref[zconcatzystr]{concat\_str}#(" s:",
+         #\hyperref[zconcatzystr]{concat\_str}#(if cap.sealed then "1" else "0",
+         #\hyperref[zconcatzystr]{concat\_str}#(" perms:",
+         #\hyperref[zconcatzystr]{concat\_str}#(#\hyperref[zBitStr]{BitStr}#(0b0 @ #\hyperref[zgetCapPerms]{getCapPerms}#(cap)),
+         #\hyperref[zconcatzystr]{concat\_str}#(" type:",
+         #\hyperref[zconcatzystr]{concat\_str}#(#\hyperref[zBitStr]{BitStr}#(otype64),
+         #\hyperref[zconcatzystr]{concat\_str}#(" offset:",
+         #\hyperref[zconcatzystr]{concat\_str}#(#\hyperref[zBitStr]{BitStr}#(#\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[zgetCapOffset]{getCapOffset}#(cap))),
+         #\hyperref[zconcatzystr]{concat\_str}#(" base:",
+         #\hyperref[zconcatzystr]{concat\_str}#(#\hyperref[zBitStr]{BitStr}#(#\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[zgetCapBase]{getCapBase}#(cap))),
+         #\hyperref[zconcatzystr]{concat\_str}#(" length:",
+	 #\hyperref[zconcatzystr]{concat\_str}#(len_str,
+	 #\hyperref[zconcatzystr]{concat\_str}#(" uninit:", if cap.uninit then "1" else "0")))))))))))))))
+         }

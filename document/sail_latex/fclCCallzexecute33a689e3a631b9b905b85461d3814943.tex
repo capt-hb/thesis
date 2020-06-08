@@ -1,0 +1,30 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCCall]{CCall}#(cs, cb, 0b00000000000)) = /* selector=0 */
+{
+  /* Partial implementation of CCall with checks in hardware, but raising a trap to perform trusted stack manipulation */
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  if InBranchDelay then
+    #\hyperref[zSignalException]{SignalException}#(ResI);
+  let cs_val = #\hyperref[zreadCapReg]{readCapReg}#(cs);
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  let cs_cursor = #\hyperref[zgetCapCursor]{getCapCursor}#(cs_val);
+  if not (cs_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cs)
+  else if not (cb_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cb)
+  else if not(cs_val.sealed) | #\hyperref[zhasReservedOType]{hasReservedOType}#(cs_val) then /* XXX Should latter be type violation? */
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cs)
+  else if not(cb_val.sealed) | #\hyperref[zhasReservedOType]{hasReservedOType}#(cb_val) then  /* XXX Should latter be type violation? */
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else if cs_val.otype != cb_val.otype then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TypeViolation, cs)
+  else if not (cs_val.permit_execute) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitExecuteViolation, cs)
+  else if cb_val.permit_execute then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_PermitExecuteViolation, cb)
+  else if cs_cursor < #\hyperref[zgetCapBase]{getCapBase}#(cs_val) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cs)
+  else if cs_cursor >= #\hyperref[zgetCapTop]{getCapTop}#(cs_val) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_LengthViolation, cs)
+  else
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_CallTrap, cs);
+}

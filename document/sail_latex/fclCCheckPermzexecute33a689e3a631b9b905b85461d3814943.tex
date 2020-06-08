@@ -1,0 +1,11 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCCheckPerm]{CCheckPerm}#(cs, rt)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let cs_val = #\hyperref[zreadCapReg]{readCapReg}#(cs);
+  let cs_perms : #\hyperref[zbits]{bits}#(64) = #\hyperref[zzzerozyextend]{zero\_extend}#(#\hyperref[zgetCapPerms]{getCapPerms}#(cs_val));
+  let rt_perms = #\hyperref[zrGPR]{rGPR}#(rt);
+  if not (cs_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, cs)
+  else if (cs_perms & rt_perms) != rt_perms then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_UserDefViolation, cs)
+}

@@ -1,0 +1,19 @@
+function clause #\hyperref[zexecute]{execute}#(#\hyperref[zCToPtr]{CToPtr}#(rd, cb, ct)) = 
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let ct_val = #\hyperref[zreadCapRegDDC]{readCapRegDDC}#(ct);
+  let cb_val = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  if not (ct_val.tag) then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_TagViolation, ct)
+  else if cb_val.tag & cb_val.sealed then
+    #\hyperref[zraisezyc2zyexception]{raise\_c2\_exception}#(CapEx_SealViolation, cb)
+  else 
+  {
+    let ctBase = #\hyperref[zgetCapBase]{getCapBase}#(ct_val);
+    /* Note: returning zero for untagged values breaks magic constants such as SIG_IGN */
+    #\hyperref[zwGPR]{wGPR}#(rd) = if not (cb_val.tag) then
+        #\hyperref[zzzeros]{zeros}#()
+      else
+        #\hyperref[ztozybits]{to\_bits}#(64, #\hyperref[zgetCapCursor]{getCapCursor}#(cb_val) - ctBase)
+  }
+}

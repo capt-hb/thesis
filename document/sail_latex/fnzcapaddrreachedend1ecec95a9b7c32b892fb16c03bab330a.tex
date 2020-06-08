@@ -1,0 +1,3 @@
+function #\hyperref[zcapAddrReachedEnd]{capAddrReachedEnd}#(cap) =
+    let top = cap.base + cap.length in
+    (cap.address >=_u top) & (top >=_u cap.address)

@@ -1,0 +1,13 @@
+function #\hyperref[zcapToBits]{capToBits}#(cap) : Capability -> CapBits =
+  (
+        cap.padding
+      @ cap.uninit
+      @ cap.otype
+      @ cap.uperms
+      @ cap.perm_reserved12_14
+      @ #\hyperref[zgetCapHardPerms]{getCapHardPerms}#(cap)
+      @ cap.sealed
+      @ cap.address
+      @ cap.base
+      @ cap.length
+  )

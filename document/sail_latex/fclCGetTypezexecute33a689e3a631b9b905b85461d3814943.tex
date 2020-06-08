@@ -1,0 +1,8 @@
+function clause #\hyperref[zexecute]{execute}# (#\hyperref[zCGetType]{CGetType}#(rd, cb)) =
+{
+  #\hyperref[zcheckCP2usable]{checkCP2usable}#();
+  let capVal = #\hyperref[zreadCapReg]{readCapReg}#(cb);
+  #\hyperref[zwGPR]{wGPR}#(rd) = if #\hyperref[zhasReservedOType]{hasReservedOType}#(capVal)
+    then #\hyperref[zsignzyextend]{sign\_extend}#(capVal.otype) /* return negative for reserved otypes */
+    else #\hyperref[zzzerozyextend]{zero\_extend}#(capVal.otype)
+}
