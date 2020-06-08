@@ -20,6 +20,10 @@
        "cuninit\t$r1, $r2",
        [(set CheriOpnd:$r1, (int_cheri_cap_uninit CheriOpnd:$r2))]>
        
+   def CDropUninit  : CheriFmt2Op<0x1c, (outs CheriOpnd:$r1), (ins CheriOpnd:$r2),
+       "cdropuninit\t$r1, $r2",
+       [(set CheriOpnd:$r1, (int_cheri_cap_drop_uninit CheriOpnd:$r2))]>
+       
    def CShrink  : CheriFmt3Op<0x2c, (outs CheriOpnd:$r1), (ins CheriOpnd:$r2, GPR64Opnd:$r3),
        "cshrink\t$r1, $r2, $r3",
        [(set CheriOpnd:$r1, (int_cheri_cap_shrink CheriOpnd:$r2, GPR64Opnd:$r3))]>;
@@ -41,6 +45,9 @@
   (i.e. written to) and the second intrinsic, /int_cheri_cap_uninit/ says that the instruction
   has one out capability register and one in capability register. The intrinsic also specifies
   that it does not interact with memory (it only uses registers).
+  /CDropUninit/ is similar to /CUninit/, with the only difference being the assembly format and
+  the memory intrinsic used (but the /int_cheri_cap_drop_uninit/ is equivalent to the 
+  /int_cheri_cap_uninit/ intrinsic).
   The /CShrink/ definition specifies it is of the /CheriFmt3Op/ format, the cheri format for 3 operands
   instructions, with a single out register and 2 in registers. The intrinsic /int_cheri_cap_shrink/
   specifies it has one out capability register, one in capability register and one in general purpose

@@ -98,6 +98,14 @@
   In the following subsections it will be assumed that the stack capability is already a local
   stack capability and that the sealing capability is local and available in the /$ddc/ register.
 
+  Note that when a function allocates arrays or structs on the stack, the /CDropUninit/ instruction
+  can be used once the array or struct has been completely initialized (the memory needed
+  by the array or struct will be zeroed by the uninitialized stack capability). 
+  This makes it easier to work with the array or struct in the rest of the code, for example when using a pointer to
+  loop over an array but instead of looping from the first element towards the last, looping
+  from the last element towards the first (this requires decrementing the offset of the
+  capability, which is not possible for an uninitialized capability).
+
 ** Invoking A Function
    Before invoking a function, the caller-saved registers should be saved on the stack.
    Getting the entry point capability for the function to be invoked remains the same as in the

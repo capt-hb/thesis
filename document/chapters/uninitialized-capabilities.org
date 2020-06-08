@@ -110,6 +110,18 @@
 
     \bigskip
     @@latex:\noindent@@
+    *Drop The Uninitialized Permission of a Capability (CDropUninit)*: This instruction allows making an uninitialized
+    capability normal again, i.e. dropping the uninitialized permission, once the entire range denoted by the base and end
+    of the capability has been written to. That means that if no uninitialized contents resides
+    in the range of an uninitialized capability, then it is safe to drop the uninitialized
+    permission of the capability. Using this instruction an uninitialized capability for an initialized
+    array or struct can be converted into a capability without the unitialized bit set, which allows
+    using negative increments for the offset (for example to loop with a pointer over an array starting
+    from the end of the array towards the base of the array, which is not possible with uninitialized
+    capabilities).
+    
+    \bigskip
+    @@latex:\noindent@@
     *Uninitialized Store (UCS[BHWD]/UCSC)*: These instructions are modified versions of their
     not-uninitialized counterparts (CS[BHWD], CSC). They behave similarly to the normal
     store instructions, except when the given offset is $-1$ and the capability used for the store
@@ -347,6 +359,33 @@
 
 *** Exceptions
     An exception is raised if the capability in $cb$ is sealed.
+
+\newpage   
+** CDropUninit
+    :PROPERTIES:
+    :UNNUMBERED:
+    :END:
+*** Format
+    CDropUninit cd, cb
+
+*** Encoding
+    #+ATTR_LATEX: :width 0.8\textwidth
+    [[../../figures/cdropuninit-encoding.png]]
+    \FloatBarrier
+
+*** Description
+    The uninit permission of the uninitialized capability in capability register $cb$ is dropped 
+    if the cursor of the capability is equal to the base, i.e. the uninitialized capability
+    has no more uninitialized content in the range of memory it denotes.
+
+*** Semantics
+    \sailfclCDropUninitexecute{}
+
+*** Exceptions
+    A coproccessor 2 exception is raised if:
+    - the capability in $cb$ is sealed;
+    - the capability in $cb$ is not uninitialized;
+    - the cursor of the capability in $cb$ is different from the base.
 
 \newpage   
 ** UCS[BHWD]
