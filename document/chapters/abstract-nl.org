@@ -2,4 +2,15 @@
   :PROPERTIES:
   :UNNUMBERED: notoc
   :END:
-  # TODO: dutch abstract
+  Deze thesis stelt een nieuwe soort capability voor: /uninitialized capabilities/, een capability
+  die geen ongeïnitialiseerde data uit het geheugen kan lezen, de capability dient eerst gebruikt
+  te worden om te schrijven naar een adres in het geheugen vooraleer van dit adres gelezen kan worden.
+  Een ISA uitbreiding is voorgesteld en is verwezenlijkt voor de CHERI capability machine. Uninitialized
+  capabilities worden dan gebruikt in een secure calling convention, gebaseerd op de calling convention
+  van Skorstengaard et al. \parencite{skorstengaard2018reasoning}, maar met als doel om de overhead
+  van het clearen van de stack te reduceren. De LLVM assembler is aangepast om uninitialized capabilities
+  te ondersteunen voor de CHERI-MIPS processor en is dan gebruikt om manueel enkele assembly programma's
+  aan te passen naar de voorgestelde calling convention. Deze assembly programma's worden geëvalueerd
+  voor de originele calling convention en de secure calling convention, als voorgesteld in deze thesis.
+  Als laatste wordt een exploratie voor de implementatie van de calling convention gegeven voor de
+  CLang/LLVM compiler.

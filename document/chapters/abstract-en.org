@@ -2,4 +2,15 @@
   :PROPERTIES:
   :UNNUMBERED: notoc
   :END:
-  # TODO: english abstract
+  This thesis proposes a new kind of capability: /uninitialized capabilities/, a capability that cannot read
+  unitialized contents from memory, the capability must first be used to write something to a memory
+  address before it can read from that address. An ISA extension for capability machines is proposed
+  and instantiated for the CHERI capability machine. Uninitialized capabilities are then used for a 
+  secure calling convention, based on the novel calling convention by Skorstengaard et al. \parencite{skorstengaard2018reasoning},
+  but with the aim to reduce some of its overhead regarding clearing the stack.
+  The LLVM assembler is modified to support uninitialized capabilities for the CHERI-MIPS processor
+  and is then used to manually modify some assembly programs to use the proposed calling convention.
+  The assembly programs are then evaluated for the original calling convention and the one proposed
+  in this thesis. Finally, an exploration of implementation for the calling convention is given for
+  the CLang/LLVM compiler.
+
