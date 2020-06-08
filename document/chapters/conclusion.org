@@ -15,12 +15,19 @@
   A modified version of the calling convention with local capabilities, using uninitialized capabilities
   as well, is described in detail. This calling convention is more secure than existing alternatives
   but at the cost of some overhead due to stack and register clearing requirements. 
-  # TODO: evaluation performance results: some overhead or significant overhead? (sentence above)
   The assembler of the LLVM project (for the MIPS backend) was modified to support the uninitialized
   capability instructions. The assembler was then used to evaluate the instructions and the secure
   calling convention.
-  # TODO
-  # Evaluation results summary
+
+  In this evaluation the difference in the number of instructions for the original and secure 
+  calling convention for a few example programs was discussed. This discussion lead to the observation the using the secure
+  calling convention almost doubles the number of instructions. The execution time for the example 
+  programs was measured and the secure calling convention is slower due to its overhead by clearing
+  registers and having functions clear their stack frames before returning to their caller.
+  The register clearing could be faster in future implementations of CHERI-MIPS by keeping a valid
+  bit per register and clearing this bit instead of zeroing the register \parencite[page~194]{watson2019capability}.
+  Optimized programs will have a smaller overhead then their unoptimized versions, this is because
+  stack frames are smaller and this leads to less clearing before a function returns to its caller.
   
   Finally, an exploration of the modifications needed to the CLang/LLVM compiler were outlined and
   discussed. Although there was not enough time to implement these myself, the exploration should
