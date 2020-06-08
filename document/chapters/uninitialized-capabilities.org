@@ -59,7 +59,7 @@
     #+NAME: fig:uninit-cap-rep
     [[../../figures/uninit-cap-representation.png]]
     \FloatBarrier
-
+    
 *** Instruction Modifications
     A few instruction were modified to take the uninitialized permission into account. What follows
     is a list of the instructions modified and a description of what that modification entails:
@@ -92,6 +92,21 @@
     This instruction takes a source capability register and a destination capability register that
     will contain the capability from the source register but with the uninitialized permission set.
     An error will be raised if the original capability did not have read-write authority.
+    
+    The instructions to get the uninitialized bit and set it can be replaced by adding it to the
+    existing set of permissions of capabilities. This would require a similar scheme as for local
+    capabilities. Instead of having an uninitialized permission, the permission would indicate
+    if a capability is initialized, i.e. capabilities would have a bit saying it is initialized
+    if that bit is set and uninitialized if it is not set. This would allow making a capability
+    uninitialized by using the /CAndPerm/ instruction, which will set the permissions of the
+    capability to the logical ~&~ (and) of the current permissions of the capability with the
+    permissions supplied in a general-purpose as argument to /CAndPerm/. The "initialized" bit
+    can then be set to 0 (i.e. indicating the capability is uninitialized) by having the corresponding
+    bit in the general-purpose be zero. This implementation choice is used for local capabilities,
+    capabilities are local if the /global/ bit is unset.
+    In this thesis the choice was made to use separate instructions for the unitialized bit,
+    otherwise every occurence of the existing /CAndPerm/ instructions needs to be updated to make 
+    sure that initialized capabilities remain initialized.
 
     \bigskip
     @@latex:\noindent@@
