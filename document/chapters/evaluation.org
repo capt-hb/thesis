@@ -218,7 +218,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |           39 |    916.1925 |
-    | Uninit             |           59 |    967.5120 |
+    | Secure             |           59 |    967.5120 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:simple-call}.
@@ -298,7 +298,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |          393 |   1743.6945 |
-    | Uninit             |          607 |   2296.3740 |
+    | Secure             |          607 |   2296.3740 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth}.
@@ -332,7 +332,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |           88 |    940.3005 |
-    | Uninit             |          162 |   1070.9105 |
+    | Secure             |          162 |   1070.9105 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth-O1}.
@@ -407,7 +407,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |          205 |   1973.3115 |
-    | Uninit             |          376 |   2687.4775 |
+    | Secure       |          376 |   2687.4775 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:slow-factorial}.
@@ -479,7 +479,7 @@
     uninitialized permission and becoming a read, write-local local capability. Decrementing
     the offset is possible again and this program will run as intended.
     As in the other examples, tests are setup so that the result from the program using the original
-    and uninit calling convention is both zero (the result of ~subtract_sums~ should clearly be zero).
+    and secure calling convention is both zero (the result of ~subtract_sums~ should clearly be zero).
     The test passes for both calling conventions.
     Table \ref{tab:sums-O1} summarizes the results of evaluating the original calling convention
     and the secure calling convention for the sums program.
@@ -491,7 +491,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |           87 |   1271.4220 |
-    | Uninit             |          214 |   1478.8585 |
+    | Secure             |          214 |   1478.8585 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth-O1}.
