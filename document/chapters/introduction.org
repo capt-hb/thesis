@@ -46,10 +46,17 @@
   to test that the new calling convention preserves the semantics of the original program (written
   in C). The tests for the calling convention consist of two assembly files, one using the original
   calling convention and one in which the calling convention is modified to be the one described
-  earlier in the thesis (using local and uninitialized capabilities). 
+  in the thesis (using local and uninitialized capabilities). 
 
-  # TODO
-  # Evaluation = outcomes (which stats were gathered/discussed, performance, ...)
+  An evaluation is done for the difference in the number of instructions when using the original 
+  calling convention and the calling convention described in this thesis. This resulted in the 
+  observation that using the secure calling convention almost doubles the number of instructions.
+  The execution time of the original calling convention and secure calling convention is compared too,
+  showing that there is an expected overhead due to the clearing requirements of the secure calling
+  convention. This overhead depends on the stack frame sizes of functions, the bigger the stack frame,
+  the more clearing is required before returning the caller of the function (functions are required
+  to clear their own used stack frame before returning).
+  
   
   After the evaluation a section is devoted to discussing the implementation of the calling convention
   in the CLang/LLVM compiler. This exploration outlines the different parts of the compiler that need
