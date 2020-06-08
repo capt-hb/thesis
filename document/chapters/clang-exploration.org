@@ -6,6 +6,10 @@
   The files mentioned in this section are relative to the MIPS backend in the LLVM project,
   /llvm-project/llvm/lib/Target/Mips/.
   Most of the subsections discussed here correspond to those defined in Chapter [[sec:secure-cc]].
+  Note that some sequences of instructions could potentially be wrapped in pseudo instructions to
+  make it more clear what the intention is. For example, getting the unique seal requires quite
+  a few instructions and it might be beneficial to wrap this in a pseudo instruction which takes
+  a single argument in which the capability to use as a seal will be stored.
   
 ** Calling Convention
    First, a calling convention similar to the CHERI purecap calling convention needs to be defined.
