@@ -31,7 +31,7 @@
   
   The first contribution of this thesis is the semantics of uninitialized capabilities. Then an 
   implementation of uninitialized capabilities is given for CHERI-MIPS in software (using a simulator).
-  on a realistic capability machine. The modifications made to existing instructions (store instructions,
+  The modifications made to existing instructions (store instructions,
   load instructions and instructions modifying the cursor of a capability) are explained and new
   instructions are described in detail. These new instructions entail separate store instructions
   for uninitialized capabilities, an instruction to make a capability uninitialized and an instruction
