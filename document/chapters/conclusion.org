@@ -21,7 +21,7 @@
 
   In this evaluation the difference in the number of instructions for the original and secure 
   calling convention for a few example programs was discussed. This discussion lead to the observation the using the secure
-  calling convention almost doubles the number of instructions. The execution time for the example 
+  calling convention doubles the number of instructions. The execution time for the example 
   programs was measured and the secure calling convention is slower due to its overhead by clearing
   registers and having functions clear their stack frames before returning to their caller.
   The register clearing could be faster in future implementations of CHERI-MIPS by keeping a valid

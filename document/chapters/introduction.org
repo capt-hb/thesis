@@ -50,7 +50,7 @@
 
   An evaluation is done for the difference in the number of instructions when using the original 
   calling convention and the calling convention described in this thesis. This resulted in the 
-  observation that using the secure calling convention almost doubles the number of instructions.
+  observation that using the secure calling convention doubles the number of instructions.
   The execution time of the original calling convention and secure calling convention is compared too,
   showing that there is an expected overhead due to the clearing requirements of the secure calling
   convention. This overhead depends on the stack frame sizes of functions, the bigger the stack frame,

@@ -511,7 +511,7 @@
     The performance of the programs discussed is slower using the secure calling convention. This
     is an expected observation, the secure calling convention requires clearing registers and
     that a called function clears its own stack frame before returning to the caller.
-    The number of instructions almost doubles when using the secure calling convention, this is
+    The number of instructions doubles when using the secure calling convention, this is
     due to
     - getting a unique seal for each function invocation;
     - setting up the stack and return capability for the function to call;
