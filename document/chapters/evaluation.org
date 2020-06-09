@@ -22,28 +22,29 @@
 [fn:cheritest-original]Original cheritest repository: https://github.com/CTSRD-CHERI/cheritest
 
 ** Unit Testing Instructions
-   The unit tests for the modified and new instructions can be found in /tests/uninitialized_capabilities/.
+   The unit tests for the modified and new instructions can be found in  \\
+   ~tests/uninitialized_capabilities~.
    These tests are focused on the behavior of the instructions and they all pass.
    I will not go over each test individually, this would become rather tedious to read, a small
    description of each test file can be found in Table \ref{tab:unit-tests-description}.
    
    #+NAME: tab:unit-tests-description
    #+CAPTION: Unit tests with small description
-   | Test File                    | Description                                                    |
-   |------------------------------+----------------------------------------------------------------|
-   | ~test_cshrink~               | Test that the bounds of a capability are correctly updated     |
-   | ~test_cdropuninit~           | Test that only an uninitialized capability with cursor=base    |
-   |                              | can drop the uninit permission                                 |
-   | ~test_csealuninit~           | Test that a sealed capability can't be mutated by trying to    |
-   |                              | make it uninit                                                 |
-   | ~test_uninit~                | Test that the cuninit instruction makes a capability           |
-   |                              | uninitialized                                                  |
-   | ~test_uninit_cap_csetaddr~   | Test that the address of an uninitialized capability cannot be |
-   |                              | lowered                                                        |
-   | ~test_uninit_cap_offset~     | Test that offsets are updated correctly and that offset cannot |
-   |                              | be lowered                                                     |
-   | ~test_uninit_cap_ucstore~    | Test that the UCS[BHWD] works as expected                      |
-   | ~test_uninit_cap_ucstorecap~ | Similar to ~test_uninit_cap_ucstore~                           |
+   | Test File                    | Description                                                 |
+   |------------------------------+-------------------------------------------------------------|
+   | ~test_cshrink~               | Test that the bounds of a capability are correctly updated  |
+   | ~test_cdropuninit~           | Test that only an uninitialized capability with cursor=base |
+   |                              | can drop the uninit permission                              |
+   | ~test_csealuninit~           | Test that a sealed capability can't be mutated by trying to |
+   |                              | make it uninit                                              |
+   | ~test_uninit~                | Test that the cuninit instruction makes a capability        |
+   |                              | uninitialized                                               |
+   | ~test_uninit_cap_csetaddr~   | Test that the address of an uninitialized capability        |
+   |                              | cannot be lowered                                           |
+   | ~test_uninit_cap_offset~     | Test that offsets are updated correctly and that offset     |
+   |                              | cannot be lowered                                           |
+   | ~test_uninit_cap_ucstore~    | Test that the UCS[BHWD] works as expected                   |
+   | ~test_uninit_cap_ucstorecap~ | Similar to ~test_uninit_cap_ucstore~                        |
    
    I will discuss one test in more detail, ~test_cshrink~, to give the reader of the thesis a better
    understanding of how these are written. This will make it easier to inspect the test files
@@ -125,7 +126,7 @@
          assert self.MIPS.t0 + 1 == self.MIPS.t2
    #+end_src
 
-   The test class needs to be the same name as the file (~test_cshrink~) and subclasses 
+   The test class needs to be the same name as the file (~test_cshrink~) and subclasses \\
    ~BaseBERITestCase~ (which gives it easy access to the contents of the log file for this
    test). The ~EXPECTED_EXCEPTIONS~ is declared to be one (the error that is expected as explained
    in the assembly file discussion). Three methods are defined, the first methods, 
@@ -204,8 +205,8 @@
     
     The function ~doSomething~ returns the argument it was passed. The ~main~ function will
     return the value from the ~doSomething~ call (which will be 100).
-    The tests for this example are ~test_purecap_original_calling_convention~ and
-    ~test_purecap_uninit_calling_convention~. In the python test files an assertion is made
+    The tests for this example are ~test_purecap_original_cc_simple_call~ and 
+    ~test_purecap_uninit_cc_simple_call~. In the python test files an assertion is made
     that the result of the program is 100. Both tests pass, so the calling convention does
     not alter the semantics of the program.
     Table \ref{tab:simple-call} shows some interesting statistics about the number of instructions of 

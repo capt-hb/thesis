@@ -53,7 +53,7 @@
    ~ucsw $c2, $2, 16($c2)~.
 
 ** Invoking A Function
-   The modifications for invoking a function will take place in /MipsISelLowering.cpp/, in the
+   The modifications for invoking a function will take place in /MipsISelLowering.cpp/, in the \\
    ~LowerCall~ function. Nodes will need to be added to the selection DAG for:
    - Getting a unique seal;
    - Sealing the stack capability;

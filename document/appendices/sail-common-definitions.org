@@ -19,9 +19,15 @@
 
 \sailvalisAddressAligned{}
 
+\sailvalmemBitsToCapability{}
+
 \sailvalMEMwTagged{}
 
 \sailvalMEMwWrapper{}
+
+\sailvalonesImplicit{}
+
+\sailvalpowTwo{}
 
 \sailvalraiseCTwoException{}
 
@@ -43,6 +49,8 @@
     the new ~base~, $base = base$ and $length = address - base$.
 \end{adjustwidth}
 
+\sailvalSignalException{}
+
 \sailvalSignalExceptionBadAddr{}
 
 \sailvalsigned{}
@@ -59,7 +67,11 @@
 
 \sailvalunsigned{}
 
+\sailvalwGPR{}
+
 \sailvalwordWidthBytes{}
 
 \sailvalwriteCapReg{}
+
+\sailvalzzerosImplicit{}
 

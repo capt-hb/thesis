@@ -72,7 +72,8 @@
 
     \bigskip
     @@latex:\noindent@@
-    *Set/Increment Offset (CSetOffset/CIncOffset//CIncOffsetImmediate/CSetAddr/CAndAddr)*: Instructions that modify 
+    *Set/Increment Offset (CSetOffset/CIncOffset//CIncOffsetImmediate/CSetAddr/ \\
+    CAndAddr)*: Instructions that modify 
     the cursor of an uninitialized capability are not allowed to set the cursor lower than it originally 
     was. The only way of lowering the cursor is by using the uninitialized store instructions.
 
