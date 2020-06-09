@@ -1,10 +1,44 @@
 * Secure Calling Convention 
   <<sec:secure-cc>>
-  The second contribution of this thesis is a modified version of the calling convention described
-  in Section [[sec:lau-cc]] combined with the CHERI calling convention from Section [[sec:cheri-cc]]. 
-  The differences are due to the original calling convention using local
-  capabilities was described for a formal capability machine and the requirement
-  for clearing the unused part of the stack. The calling convention described in this section
+  Now that the concrete ISA extension for uninitialized capabilites has been proposed for CHERI-MIPS,
+  we can take a look at the second contribution of this thesis: a secure calling convention for CHERI
+  that uses local and uninitialized capabilities.
+
+  The calling convention aims to have the well-bracketed control flow and local state encapsulation
+  properties. These are defined as:
+  #+begin_quote
+  Well-bracketed control flow (WBCF) expresses that invoked functions must either return to their
+  callers, invoke other functions themselves or diverge, and generally holds in programming
+  languages that do not offer a primitive form of continuations \parencite{skorstengaard2019stktokens}.
+  #+end_quote
+  #+begin_quote
+  Local state encapsulation (LSE) is the guarantee that when a function invokes another function,
+  its local variables (saved on its stack frame) will not be read or modified until the invoked
+  function returns \parencite{skorstengaard2019stktokens}.
+  #+end_quote
+  
+  For WBCF, the calling convention prevents adversaries from jumping to return capabilities
+  that the adversary might have stored on the stack, this is described in Figure \ref{fig:secure-cc-1}.
+  LSE can be achieved by shrinking the range of authority of the stack capability so that it no
+  longer includes the stack frame of the caller. It is also important that the registers are cleared
+  so that no variables or capabilities concerning the stack frame of the caller can be accessed by 
+  the callee.
+  
+  The calling convention requires sealing a pair of capabilities (the return capability and
+  stack capability) using a unique seal. This unique seal (if the callee can never reconstruct
+  the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
+  attempt to supply a different stack capability or return capability.
+
+  The secure calling convention is based on the calling convention from
+  Section [[sec:lau-cc]] combined with the CHERI calling convention from Section [[sec:cheri-cc]]. 
+  The calling convention with local capabilities (Section [[sec:lau-cc]]) has to be adjusted for
+  the CHERI capability machine (the calling convention was defined for a formal capability machine). 
+  The enter capability will be substituted to a sealed capability pair. The capability pair exists 
+  of a code capability and data capability. 
+  Before invoking a function, the stack capability needs to be made uninitialized to prevent
+  clearing the unused part of the stack. The requirement to clear the unused part of the stack
+  before returning to the caller of the function is also no longer required.
+  The calling convention described in this section
   is designed for the CHERI capability machine but should apply to capability machines in general
   that support local capabilities, sealed capabilities and uninitialized capabilities.
   An important notion for this calling convention is that the stack capability will have the
@@ -30,37 +64,21 @@
   [[../../figures/secure-cc-1.png]]
   \FloatBarrier
 
-  The calling convention aims to have the well-bracketed control flow and local state encapsulation
-  properties. These are defined as:
-  #+begin_quote
-  Well-bracketed control flow (WBCF) expresses that invoked functions must either return to their
-  callers, invoke other functions themselves or diverge, and generally holds in programming
-  languages that do not offer a primitive form of continuations \parencite{skorstengaard2019stktokens}.
-  #+end_quote
-  #+begin_quote
-  Local state encapsulation (LSE) is the guarantee that when a function invokes another function,
-  its local variables (saved on its stack frame) will not be read or modified until the invoked
-  function returns \parencite{skorstengaard2019stktokens}.
-  #+end_quote
-  
-  For WBCF, the calling convention prevents adversaries from jumping to return capabilities
-  that the adversary might have stored on the stack, this was described in Figure \ref{fig:secure-cc-1}.
-  LSE can be achieved by shrinking the range of authority of the stack capability so that it no
-  longer includes the stack frame of the caller. It is also important that the registers are cleared
-  so that no variables or capabilities concerning the stack frame of the caller can be accessed by 
-  the callee.
-  
-  The calling convention requires sealing a pair of capabilities (the return capability and
-  stack capability) using a unique seal. This unique seal (if the callee can never reconstruct
-  the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
-  attempt to supply a different stack capability or return capability.
-  By using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]])
-  it is not necessary to be able to unseal the pair (the ccall instruction will do this if the seals
-  of the sealed capability pair is the same). This means that the seals can be obtained by having
+  The sealing requirement of the return and stack capability can be fullfilled 
+  by using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]]).
+  It is not necessary to be able to unseal the pair, i.e. the return and stack capability,
+  (the ccall instruction will do this if the seals of the sealed capability pair is the same). 
+  This means that the seals can be obtained by having
   a central "sealing capability" from which a seal can be used and that seal can then be made
-  unavailable. For convenience, this sealing capability will be maintained in the /$DDC/ register
+  unavailable. 
+  For convenience, this sealing capability will be maintained in the /$DDC/ register
   (default data capability), which is not used in the purecap ABI mode of CHERI (for which this
-  calling convention is designed). Obtaining a unique seal is then as trivial as just retrieving
+  calling convention is designed). A general capability register could be used instead of /$DDC/,
+  as long as /$DDC/ gets invalidated (the default data capability can otherwise be used to unseal
+  any sealed capability). A last alternative to the /$DDC/ and general capability register to maintain
+  a "sealing capability" would be to store that sealing capability in memory, so that every function
+  can access it.
+  Obtaining a unique seal is then as trivial as just retrieving
   the sealing capability to be used in the cseal instructions. Making the just used seal unobtainable
   can then be done by increasing the cursor and changing the range of authority of the sealing
   capability to no longer include the previous cursor (i.e. settings its base address higher).
