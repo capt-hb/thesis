@@ -12,5 +12,5 @@
   te ondersteunen voor de CHERI-MIPS processor en is dan gebruikt om manueel enkele assembly programma's
   aan te passen naar de voorgestelde calling convention. Deze assembly programma's worden geëvalueerd
   voor de originele calling convention en de secure calling convention, als voorgesteld in deze thesis.
-  Als laatste wordt een exploratie voor de implementatie van de calling convention gegeven voor de
+  Als laatste geef ik een exploratie voor de implementatie van de calling convention voor de
   CLang/LLVM compiler.

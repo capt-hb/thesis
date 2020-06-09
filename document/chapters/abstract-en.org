@@ -8,8 +8,9 @@
   and instantiated for the CHERI capability machine. Uninitialized capabilities are then used for a 
   secure calling convention, based on the novel calling convention by Skorstengaard et al. \parencite{skorstengaard2018reasoning},
   but with the aim to reduce some of its overhead regarding clearing the stack.
-  The LLVM assembler is modified to support uninitialized capabilities for the CHERI-MIPS processor
-  and is then used to manually modify some assembly programs to use the proposed calling convention.
+  I modified the LLVM assembler to support uninitialized capabilities for the CHERI-MIPS processor
+  and used the assembler then to manually modify some assembly programs to use the calling convention I propose
+  in the thesis.
   The assembly programs are then evaluated for the original calling convention and the one proposed
   in this thesis. Finally, an exploration of implementation for the calling convention is given for
   the CLang/LLVM compiler.
