@@ -34,14 +34,6 @@
 
 
 \newpage
-* Notice
-  :PROPERTIES:
-  :UNNUMBERED: notoc
-  :END:
-  #+INCLUDE: ./chapters/covid-19/en.org :minlevel 2
-  #+INCLUDE: ./chapters/covid-19/nl.org :minlevel 2
-
-\newpage
 #+INCLUDE: ./chapters/abstract-en.org :minlevel 1
 #+INCLUDE: ./chapters/abstract-nl.org :minlevel 1
 
