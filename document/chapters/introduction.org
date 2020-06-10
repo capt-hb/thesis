@@ -1,11 +1,12 @@
 * Introduction
-  Capability machines are a special type of processors, instead of having traditional pointers,
-  capability machines offer capabilities to interact with memory. Capabilities are unforgeable 
+  \todo{General remark for the future: this is easier to in a version-managed environment if each sentence is on a separate line. Iirc, there is some Emacs function that can fix this for you.}
+  Capability machines are a special type of processors.
+  Instead of having traditional pointers, capability machines offer capabilities to interact with memory. Capabilities are unforgeable
   tokens that carry authority to access memory or an object. Conceptually we can view capability
   machines as a set of permissions, a base address, an end address and a cursor (these denote
   the range of authority of the capability). While capability machines were an 
   active topic of research decades ago \parencite{levy2014capability}, the research interest into
-  capability machines has grown again by a recently developed capability machine, 
+  capability machines has grown again by merit of a recently developed capability machine,
   CHERI \parencite{watson2019capability}. 
   One of the biggest interests in capability stems from the security primitives they offer. Because
   capabilities have permissions and a range of authority, they seem promising to improve the security
@@ -23,14 +24,14 @@
   to which it has not first written, a only-read-after-write semantics. Having the stack 
   capability be a local and uninitialized capability would still give it the advantages of the 
   calling convention with local capabilities and it would get rid of the need to clear the unused part
-  of the stack when an invoked function returns. An adversary (an untrusted piece of code trying to 
-  perform malicious actions) can save a capability in its stack frame and return control to its
+  of the stack when an invoked function returns\todo{Don't you mean; when invoking an adversary?}.
+  An adversary (an untrusted piece of code trying to perform malicious actions) can save a capability in its stack frame and return control to its
   caller, but because the stack capability is uninitialized, when another adversary is called and
   tries to access that capability, it can only do so after
   overwriting it with something else and is thus unable to access that capability.
   
-  The first contribution of this thesis is the semantics of uninitialized capabilities. Then an 
-  implementation of uninitialized capabilities is given for CHERI-MIPS in software (using a simulator).
+  The first contribution of this thesis is the semantics of uninitialized capabilities\todo{why don't you refer to all section numbers here? also; if you want to list contributions explicitly, you could just opt for an itemization, before outlining the structure of your thesis}\todo[inline]{Also, as part of the contributions, I would expect you to more explicitly state the caveat that you do not implementat the full calling convention of Lau et al, although maybe you describe how the entire thing would work? I haven't read further at this point, but I would expect you to delve a bit deeper into this at a later point regardless, and preemptively clarify this here.}.
+  Then an implementation of uninitialized capabilities is given for CHERI-MIPS in software (using a simulator).
   The modifications made to existing instructions (store instructions,
   load instructions and instructions modifying the cursor of a capability) are explained and new
   instructions are described in detail. These new instructions entail separate store instructions
@@ -48,9 +49,9 @@
   calling convention and one in which the calling convention is modified to be the one described
   in the thesis (using local and uninitialized capabilities). 
 
-  An evaluation is done for the difference in the number of instructions when using the original 
+  An evaluation is performed to quantify the difference in the number of instructions when using the original
   calling convention and the calling convention described in this thesis. This resulted in the 
-  observation that using the secure calling convention doubles the number of instructions.
+  observation that using the secure calling convention doubles the number of instructions.\todo{A bit strange how this seems not to depend on the frame sizes, just judging from the sentence you write}
   The execution time of the original calling convention and secure calling convention is compared too,
   showing that there is an expected overhead due to the clearing requirements of the secure calling
   convention. This overhead depends on the stack frame sizes of functions, the bigger the stack frame,
@@ -64,4 +65,5 @@
   but the exploration will surely be useful for future work that implements this calling convention
   or a new calling convention needs to be added in the CLang/LLVM compiler.
 
-
+  \todo{Mention the conclusion (and a discussion/future work section, if any)}
+\remark{Overall, I like the structure of the intro. You have to be careful not to provide too much detail so as not to confuse people, and I think that's ok here.}

@@ -19,7 +19,7 @@
    our return capability and stack capability. 
    We then create the local enter capability for the restore instructions, return and stack capability.
    The restore instructions will restore the return and stack capability. Figure \ref{fig:local-cap-stack-frame}
-   show what this would look like on the stack.
+   shows what this would look like on the stack.
 
    #+CAPTION: Stack frame with restore instructions
    #+ATTR_LATEX: :width 0.5\textwidth
@@ -33,7 +33,7 @@
 
    After this setup is done a jump can be made to the function. A check is required if the 
    jump is done using a function pointer (for example callbacks), to see if that function pointer 
-   is global (i.e. not local). If this check fails then the function invokation fails.
+   is global (i.e. not local). If this check fails then the function invocation fails.
    
    When the callee returns using the given enter return capability it will execute the restore
    instructions, after which we can remove the return and stack capability from the stack, as well
@@ -55,7 +55,7 @@
    # all non-argument registers are cleared, so nothing left to spill when jumping to a function?
    # (return/stack cap are spilled as part of the "Invoking a Function" process)
    The callee needs to check that the stack capability is *RWLX*. The necessary stack setup happens 
-   by the caller instead of by the callee.
+   by the caller instead of by the callee.\todo{is there a use for caller-callee-saved in a secure calling convention? you can mention the answer here}
 
 ** Function Epilogue
    The following steps should be taken before jumping to the return capability:
@@ -68,4 +68,3 @@
    be an old stack capability or return capability which could then be used later on, for example
    to get access to a part of the stack it should not be able to access (in the case of storing an
    old stack capability).
-   

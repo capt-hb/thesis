@@ -62,7 +62,7 @@
 
 *** Sealed Capabilities
     <<sec:sealed-capabilities>>
-    One more kind of capability that is of interest for this thesis is the use of /sealed/ capabilities.
+    One more capability of interest for this thesis is the /sealed/ capability.
     A sealed capability is immutable and cannot be used to read or write to memory.
     If one wants to use a sealed capability or modify it, it must first be unsealed. Unsealing a
     sealed capability can only be done by using the same seal by which it was sealed.
@@ -96,13 +96,13 @@
     The definition of sealed capabilities was given in Section [[sec:sealed-capabilities]]. This section
     will explain how CHERI supports sealed capabilities.
     
-    Unsealed capabilities have an /otype/ (see Figure \ref{fig:cap-representation} of -1, which is
+    Unsealed capabilities have an /otype/ (see Figure \ref{fig:cap-representation}) of -1, which is
     the default for all capabilities. A capability can be sealed by using the /CSeal/ instruction,
     which is of the form: ~cseal cd, cb, ct~. $cb$ contains the capability to be sealed and the
     sealed capability will be written to $cd$. The seal itself is taken from the capability residing
-    in $ct$, more specifically, the 24 least significant bits of the cursor of $ct$.
+    in $ct$, more specifically, the 24 least significant bits of the cursor of $ct$\todo{I think it needs to have a set seal permission set as well; Id look into this and mention it}.
     This cursor is not allowed to be greater than the maximum otype (which is
-    $2^24 - 1 - 16$, the $- 16$ subtracts the reserved otypes that have a special meaning
+    $2^24 - 1 - 16$\todo{typesetting}, the $- 16$ subtracts the reserved otypes that have a special meaning
     and cannot be used as a normal seal). The cursor itself also needs to be in the bounds
     of the capability used for sealing ($ct$). If these conditions are not met than an exception
     is raised (some other conditions apply too but are irrelevant for the discussion here).
@@ -118,7 +118,7 @@
     for more details about CCall using $selector = 0$, refer to the CHERI technical report \parencite[page~181]{watson2019capability}.
     Both capabilities in registers $cs$ and $cb$ will be unsealed, but only if they *both* have the
     same seal. Furthermore, $cs$ should be a capability with the execute permission and $cb$ should
-    not have the execute permission set. $cs$ will be placed in the program counter capability register (PCC)
+    not have the execute permission set. $cs$\todo{dont start sentences in mathematical symbols -> The value $cs$ ...} will be placed in the program counter capability register (PCC)
     and $cb$ in the invoked data capability register (IDC).
     
     CCall thus takes a pair of sealed capabilities, a code capability and a data capability and will

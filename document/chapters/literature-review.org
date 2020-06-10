@@ -1,4 +1,5 @@
 * Literature Review
+  \todo[inline]{Just glossing over this, I do not see the fundamental distinction between the content of sections 2 and 3? This is more CHERI intro than literature review to me, and could be merged somewhere into section 3 (or renamed). It would make more sense to me to have the related work as part of section 3, or to discuss it after. Now you have a half-explanation of what capability machines are intuitively, just to give a proper one in the next section. }
   Capability machines are a special type of processor that offer /capabilities/, which can be 
   described as unforgeable tokens that carry authority. The first capability machines can be traced back to
   1959 with the Rice University Computer. 
@@ -10,7 +11,7 @@
   An important addition to capability systems was the concept of sealing \parencite{morris1973protection,redell1974naming}
   which makes it impossible to modify or use the capability without unsealing it first.
 
-  In Fabry's paper of 1974 \parencite{fabry1974capability} he compares capability addressing with
+  In Fabry's paper from 1974 \parencite{fabry1974capability} he compares capability addressing with
   segmented primary memory addressing and predicted that the use of tags to identify capabilities
   would dominate. 
   

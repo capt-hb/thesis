@@ -1,6 +1,6 @@
 * CHERI-MIPS Calling Convention
   <<sec:cheri-cc>>
-  This section describes the calling convention used in CHERI-MIPS (for the purecap ABI), which
+  This section describes the calling convention used in CHERI-MIPS (for the purecap ABI\todo{never introduced this concept}), which
   is similar to the MIPS-N32/N64 calling convention\parencite[Section~4.11]{watson2019capability}. The CHERI ISAv7 
   technical report mentions the capability register conventions used in the calling convention
   in Section 4.11\parencite{watson2019capability}. The remaining information for the CHERI-MIPS 
@@ -19,7 +19,7 @@
    Before being able to invoke a function it is necessary to create a capability that points
    to the code of the function we want to call.
    The first thing to do is get a pc-relative address for the Global Offset Table (GOT), this
-   is done by using the following instruction sequence:
+   is done by using the following instruction sequence:\todo{if you show code, some more explanation is required (maybe this is work in progress?)}
    #+ATTR_LATEX: :options frame=single
    #+begin_src cherimips -n
    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
@@ -37,7 +37,7 @@
    we use need to be pushed on the stack.
    
    In CHERI-MIPS $c12 is used as the entry point capability and $c17 as the return point capability,
-   consequently jumping to a function will always look like ~cljar $c12, $c17~.
+   consequently jumping to a function will always look like ~cljar $c12, $c17~\todo{cjalr? typo? + isnt the current return address stored in c17, rather than the one you will be using in the next frame? This is just a guess, but I'd check.}.
    
    When the function returns we need to restore the caller-saved registers. The caller-save registers
    are /$c11-16, $c25/.

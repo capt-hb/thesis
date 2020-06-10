@@ -18,6 +18,8 @@
 #+LATEX_HEADER: \usepackage{placeins}
 #+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \usepackage{changepage}
+#+LATEX_HEADER: \usepackage[colorinlistoftodos,prependcaption,textsize=normal]{todonotes}
+#+LATEX_HEADER: \newcommand{\remark}[1]{\todo[color=blue!30]{#1}}
 #+LATEX_HEADER: \faculty{Sciences and Bio-Engineering Sciences}
 #+LATEX_HEADER: \promotors{Promotor: Prof. Dr. Dominique Devriese \\ Supervisor: Thomas Van Strydonck \\ Supervisor: Dr. Steven Keuchel}
 #+LATEX_HEADER: \pretitle{Master thesis submitted in partial fulfilment of the requirements for the degree of Master of Science in Applied Sciences and Engineering: Computer Science}
