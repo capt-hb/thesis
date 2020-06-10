@@ -5,31 +5,17 @@
   that uses local and uninitialized capabilities.
 
   The calling convention aims to have the well-bracketed control flow and local state encapsulation
-  properties. These are defined as\todo{are these literal quotes? If not,I wouldnt indent.}:
-  #+begin_quote
-  Well-bracketed control flow (WBCF) expresses that invoked functions must either return to their
-  callers, invoke other functions themselves\todo{in WB fashion} or diverge, and generally holds in programming
-  languages that do not offer a primitive form of continuations \parencite{skorstengaard2019stktokens}.
-  #+end_quote
-  #+begin_quote
-  Local state encapsulation (LSE) is the guarantee that when a function invokes another function,
-  its local variables (saved on its stack frame) will not be read or modified until the invoked
-  function returns \parencite{skorstengaard2019stktokens}.\remark{What about when a function returns to another function? Definition probably depends on the use case.}
-  #+end_quote
- \todo{also, why did you not introduce these concepts with Lau's calling convention? then you could just contrast the difference with the stack clearing here}
-  
+  properties, just like the calling convention using local capabilities from Section [[sec:lau-cc]].
+
   To achieve WBCF, the calling convention prevents adversaries from jumping to return capabilities
-  that the adversary might have stored on the stack, this is described in Figure \ref{fig:secure-cc-1}\todo{referring to a figure shouldnt replace the explanation here + the 'secret' in the figure is a bit misleading, as it suggests a confidentiality-related use case, rather than a WBCF one}.
+  that the adversary might have stored on the stack, by not allowing adversaries to read contents
+  from the stack unless they have written to that location first (the stored return capability
+  can thus only be overwritten and never read).
   LSE can be achieved by shrinking the range of authority of the stack capability so that it no
   longer includes the stack frame of the caller. It is also important that the registers are cleared
   so that no variables or capabilities concerning the stack frame of the caller can be accessed by 
   the callee.
   
-  The calling convention requires sealing a pair of capabilities (the return capability and
-  stack capability) using a unique seal. This unique seal (if the callee can never reconstruct
-  the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
-  attempt to supply a different stack capability or return capability.\todo{this paragraph is too vague to me; high-level and details mixed in - either say this later or clarify a bit - why sealing? what is the conceptual role of each (or dont mention return and stack specifically yet)? code-data pair?}
-
   The secure calling convention is based on the calling convention from
   Section [[sec:lau-cc]] combined with the CHERI calling convention from Section [[sec:cheri-cc]]. 
   The calling convention with local capabilities (Section [[sec:lau-cc]]) has to be adjusted for
@@ -37,14 +23,15 @@
   The enter capability will be substituted by a sealed capability pair. The capability pair exists
   of a code capability and data capability. 
   Before invoking a function, the stack capability needs to be made uninitialized to prevent
-  having to clear the unused part of the stack. The requirement to clear the unused part of the stack
-  before returning to the caller of the function is also no longer required\todo{bit of context/explanation here? also, Lau already mentions this in his journal version iirc, so you can reference it, as it is not a novel idea}.
+  having to clear the unused part of the stack (see Section [[sec:lau-cc-invoking]]). 
+  The requirement to clear the unused part of the stack
+  before returning to the caller of the function is also no longer required (see Section [[sec:lau-cc-epilogue]]).
   The calling convention described in this section
   is designed for the CHERI capability machine but should apply to capability machines in general
   that support local capabilities, sealed capabilities and uninitialized capabilities.
   An important notion for this calling convention is that the stack capability will have the
   permissions *RWL* and will add the *U* permission on function invocation, resulting in a 
-  stack capability with the *UL*\todo{URWL?} permissions. Figure \ref{fig:uninit-stack} shows the concept
+  stack capability with the *URWL* permissions. Figure \ref{fig:uninit-stack} shows the concept
   of the stack using an uninitialized stack capability. The red area is not in the range of 
   authority of the stack capability, the green area can be read and written to and the orange 
   area is write-only.
@@ -65,6 +52,14 @@
   [[../../figures/secure-cc-1.png]]
   \FloatBarrier
 
+  The calling convention requires sealing a pair of capabilities (the return capability and
+  stack capability) using a unique seal. This pair of capabilities will be passed in registers
+  to the callee, which can only return to its caller by jumping using the given return and stack
+  capability pair. Note that the stack capability used
+  in this jump is the stack capability of the caller, not the callee itself.
+  The unique seal (the callee can never reconstruct
+  the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
+  attempt to supply a different stack capability or return capability. 
   The sealing requirement of the return and stack capability can be fullfilled 
   by using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]]).
   It is not necessary to be able to unseal the pair, i.e. the return and stack capability,
@@ -72,11 +67,16 @@
   This means that the seals can be obtained by having
   a central "sealing capability" from which a seal can be used and that seal can then be made
   unavailable. 
+
   For convenience, this sealing capability will be maintained in the /$DDC/ register
   (default data capability), which is not used in the purecap ABI mode of CHERI (for which this
-  calling convention is designed). A general capability register could be used instead of /$DDC/,
+  calling convention is designed). The /$DDC/ register is a hardware register used in the non-purecap
+  ABIs of CHERI to support legacy loads and stores with pointers instead of capabilities \parencite[Section~2.3.12]{watson2019capability}.
+  Using /$DDC/, a hardware register, requires copying it into a general-purpose capability register. This
+  can be done with the /CGetDefault/ instruction and setting it with the /CSetDefault/ instruction.
+  A general-purpose capability register could be used instead of /$DDC/,
   as long as /$DDC/ gets invalidated (the default data capability can otherwise be used to unseal
-  any sealed capability). A last alternative to the /$DDC/ and general capability register to maintain
+  any sealed capability). A last alternative to the /$DDC/ and general-purpose capability register to maintain
   a "sealing capability" would be to store that sealing capability in memory, so that every function
   can access it.
   Obtaining a unique seal is then as trivial as just retrieving
@@ -129,28 +129,41 @@
    Before invoking a function, the caller-saved registers should be saved on the stack.
    Getting the entry point capability for the function to be invoked remains the same as in the
    original CHERI calling convention.
-   One important caveat is that stack frames should begin at addresses that are multiples of 32\todo{why?},
-   this means that if necessary, some zeroes need to be written on the stack to make sure that
+   One important caveat is that stack frames should begin at addresses that are multiples of 32,
+   because capabilities can only be stored in memory at addresses that are multiples of 32. If stack 
+   frames could begin at any possible address there would be extra overhead everytime bytes need to 
+   be stored to memory that need to be alignment (for example capabilities need to be stored at 
+   addresses that are a multiple of 32), due to adding instructions that would need to check if the 
+   alignment rule is being followed and if not write some zeroes first.
+   The stack frame address requirement means that if necessary, some zeroes need to be written on the stack to make sure that
    the cursor of the stack capability that will be passed to the callee is a multiple of 32.
    Therefore the safe assumption can be made that every stack frame will have a size that
-   is a multiple of 32.
+   is a multiple of 32. This requirement also makes it easier to determine in the compiler
+   where to store the local state of a function.
    
    There are a few steps that need to be taken before jumping to the function:
    - the current stack capability needs to be sealed;
-   - the stack capability\todo{clarify: not the same copy as in point 1} needs to be shrunk to no longer include the stack frame of the caller
+   - the stack capability, to be used by the callee, needs to be shrunk to no longer include the stack frame of the caller
      (i.e. the unused part of the stack) and needs to be made uninitialized;
    - the return capability is constructed as the current program counter capability but
-     incremented so that it returns to the instruction that restores the old stack capability\remark{do you require explicit instructions to restore the old stack capability, if it can be passed as the data capability to the next stack frame and then be unsealed upon return by ccall? maybe Im missing something relating to index\permissions -- Ok, this got cleared up below, maybe reformulate this a bit here to clarify},
-     this means passed spilling arguments to the stack, register clearing and jumping to the 
-     function;
+     incremented so that it returns to the instruction that restores the old stack capability
+     this means passed the register clearing and jumping to the 
+     function (the instruction to restore the old stack capability simply moves the contents of
+     /$idc/, the invoked data capability register, into the stack capability register, /$c11/);
    - arguments to be passed on the stack can now be pushed onto the stack frame of the callee;
    - registers need to be cleared, argument registers that are used should not be cleared,
      capability registers /$ddc/, /$c1-2/, /$c11-12/ should not be cleared (/$ddc/ is the capability
-     used for sealing the stack and return capabilities, /$c1-2/ contain the return and stack
+     used for sealing the stack and return capabilities, /$c1-2/ will contain the return and stack
      capability, /$c12/ contains the capability
      to jump to and /$c11/ contains the stack capability to be used by the callee);
    After performing these steps, the jump to the function can take place.
-   \todo[inline]{You do not explicitate whether or not the 2 capabilities in your sealed pair should be local or not - I think it is important to clarify this here. Can you have a non-local code capability? Does CHERI allow this? What would be the consequences if it did; could this work? }
+   To prevent adversaries from storing either the return or stack capability in global memory, 
+   they should both be local capabilities.
+
+   The return capability is passed in register /$c1/ and the stack capability of the caller
+   in register /$c2/, this choice was made to conform with the CHERI ABI and CheriBSD, which limits
+   the number of registers that may be used with the ccall instruction in order to avoid the need
+   to decode the instruction and to determine the concrete argument registers \parencite[page~184]{watson2019capability}.
    
    When the callee returns, the stack capability of the caller will be in the /$idc/ capability register
    (which is /$c26/, used as the invoked data capability register) and the first instruction 
@@ -168,8 +181,10 @@
    # spill arguments to the stack if necessary
    ...
 
-   li $t0, 28
+   li $t0, 32
+   li $t1, 0xfffffffe 
    cgetpccincoffset $c17, $t0     
+   candperm $c17, $c17, $t1
    cseal $c1, $c17, $c13
    
    clearlo 0xffff 
@@ -188,31 +203,35 @@
    The first 3 instructions (lines 1-3) seal the stack capability with the unique seal, then shrink
    the stack capability to only cover the unused part of the stack and make the
    stack capability now uninitialized. 
-   On lines 10-12 the return capability is created and also sealed using the same unique seal as for
-   the stack capability. Note that the program counter is incremented by 28, this number depends
-   on the number of instructions required to skip to get to the cmove instruction (line 22), this
-   will always be 28\todo{how did you obtain 28?}.
+   On lines 10-14 the return capability is created and its permissions adjusted so that it is a 
+   local capability. The return capability is sealed using the same unique seal as for
+   the stack capability. Note that the program counter is incremented by 32, this number depends
+   on the number of instructions required to skip to get to the cmove instruction (line 24), this
+   will always be 32 (there is one /candperm/ instruction, one /cseal/ instruction, 
+   4 register clearing instructions, one jump
+   instruction and one no-op instruction, this is a total of 8 instructions and each instruction requires 
+   one word, which is 4 bytes, i.e. $8 * 4 = 32).
    
-   The register clearing happens on lines 14-17 using the /CClearRegs/ \parencite[page~193]{watson2019capability} 
+   The register clearing happens on lines 16-19 using the /CClearRegs/ \parencite[page~193]{watson2019capability} 
    instruction (/clearlo/, /clearhi/, /cclearlo/ and /cclearhi/ are mnemonics for /cclearregs/ 
    that indicate a register set to be cleared). CClearRegs takes as a first argument the register 
    set to be cleared. The second argument is a mask indicating which registers of the register set 
    to clear, when a bit of the mask is set, the corresponding register will be cleared (for example,
    if bit 0 of the  mask is set than the lowest numbered register in the register set will be cleared)
-   Clearlo targets the register set /$r0-15/, clearhi register set /$r16-31/, cclearlo register set
+   Clearlo targets the register set /$0-15/, clearhi register set /$16-31/, cclearlo register set
    $ddc, /$c1-15/ and cclearhi register set /$c16-31/. In the instructions shown, all registers
    except for /$ddc/, /$c1-2/ and /$c11-12/ are cleared. When arguments are passed in registers to 
    a function than those registers should _not_ be cleared (i.e. their corresponding bit in the mask should
    not be set).
    
-   The jump to the function to be invoked happens on line 19. Following this jump is a /nop/ 
+   The jump to the function to be invoked happens on line 21. Following this jump is a /nop/ 
    (no-operation) instruction, which is used for the branch delay slot of the preceding
    jump instruction. The instruction in the branch delay slot always executes after the branch and
    is used for better instruction level parallelism with pipelining \parencite[page~322]{patterson2016computer}.
    One of the clear registers could possibly be put in this branch delay slot. I have chosen not
    to do this here as it makes the different steps of the calling convention more clear.
    
-   Finally, the instruction on line 22 moves the content of register /$idc/ into the stack capability
+   Finally, the instruction on line 24 moves the content of register /$idc/ into the stack capability
    register /$c11/.
 
 ** Argument Passing
@@ -226,25 +245,46 @@
    Also keep in mind that  the previous stack capability is also a sealed capability (passed in /$c2/).
    The only way to return to the caller is thus by using the /CCall/ instruction.
    As arguments to the /CCall/ instruction the return capability and previous stack capability registers are
-   provided. The selector\todo{briefly repeat what this is?} used for /CCall/ is 1, meaning that the return capability is unsealed and placed
+   provided. The selector, used to choose how the ccall instruction jumps to the given code and data
+   capability pair, for /CCall/ is 1, meaning that the return capability is unsealed and placed
    in the program counter capability register and the previous stack capability is unsealed and
    placed in the invoked data capability register (/$idc/).
    
-   Before jumping to the return capability, the non-return registers need to be cleared.\todo{This is the epilogue; merge the sections if you want to mention it here.}
-   
    As mentioned before, the return capability is passed in register /$c1/ and the stack capability
-   in register /$c2/, this choice was made to conform with the CHERI ABI and CheriBSD, which limits
-   the number of registers that may be used with the ccall instruction\todo{I wouldve appreciated this exaplanation during the itemization above, I was wondering about this}, in order to avoid the need
-   to decode the instruction and to determine the concrete argument registers \parencite[page~184]{watson2019capability}.
+   in register /$c2/. 
 
 ** Function Prologue
    The stack setup happens before the function invocation by the caller, no additional 
-   processing is required in the function prologue.
-   \todo{Wat gebeurt er wanneer de stack pointer die we binnenkrijgen een normale, global pointer is en niet RWLX? Kan je dan ge-confused-deputy-d worden? Heb je prepstk van Lau nodig of niet?}
+   processing is required in the function prologue except for checking that the stack capability
+   has the *URWL* permissions. 
+
+   This can be done by taking the uninitialized bit and the global bit. It is not necessary to
+   check explicitly for the read and write permissions as these are already needed to make a
+   capability uninitialized. 
+   The following assembly code illustrates how to check if the stack capability is uninitialized
+   and local:
+   #+begin_src cherimips -n
+   cgetuninit $t0, $c11
+   cgetperm $t1, $c11
+   not $t1, $t1
+   andi $t1, $t1, 1
+   and $t1, $t1, $t0
+   teq $t1, $zero
+   #+end_src
+   
+   On the first two lines the uninitialized bit is written to register /$t0/. The permissions of
+   the capability are stored in /$t1/. The /not/ instructions is required because, as mentioned
+   earlier, a capability is local if its /global/ bit is not set. By using the /not/ instruction
+   the global bit will now be set and the /andi/ instruction will keep it set in /$t1/ (if the
+   stack capability was local, otherwise /$t1/ will now be all zeros). The /and/ instruction on
+   line 5 is used to combine the uninitialized bit and local bit. If the capability is 
+   uninitialized and local then /$t1/ will not be all zeros. 
+   The last instruction, /teq/, will trap if /$t1/ is all zeros, i.e. the stack capability was not
+   local and uninitialized.
 
 ** Function Epilogue
    <<sec:function-epilogue>>
-   The instruction sequence for returning from a function in the secure calling convention then
+   The instruction sequence for returning from a function in the secure calling convention
    becomes:
    #+begin_src cherimips -n
    # Clear local variables and spilled arguments
@@ -261,17 +301,17 @@
    #+end_src
    
    The first lines (1-3) indicate that the local variables and spilled arguments should be cleared,
-   this happens by writing the value of the zero register (/$r0/ which is the same as /$zero/) over
+   this happens by writing the value of the zero register (/$0/ which is the same as /$zero/) over
    the memory containing the local variables and spilled arguments until they are completely cleared.
    In the example instructions above there were 2 local variables in the stack frame and these 
    have been overwritten with zeroes. 
    
    Lines 6-9 clear the non-return registers. The only registers not cleared are
    /$c1/ and /$c2/ (as these will be used for the /CCall/ instruction) and optionally the registers
-   containing the return value, which can be /$c3/ if a capability is returned or /$r2-3/ for
+   containing the return value, which can be /$c3/ if a capability is returned or /$2-3/ for
    non-capability return values.
    In the instruction sequence shown above, the assumption is made
-   that the return value is stored in /$r2/, i.e. its bit in the mask to /clearlo/ is not set.
+   that the return value is stored in /$2/, i.e. its bit in the mask to /clearlo/ is not set.
    
    The /CCall/ instruction follows on line 11 and performs the actions discussed earlier. Unlike
    other jump instructions in MIPS, it does not have a branch delay slot.

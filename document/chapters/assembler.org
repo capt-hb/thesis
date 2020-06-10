@@ -1,4 +1,5 @@
 * Assembler
+  <<sec:assembler>>
   This section will describe the modifications made to the CHERI-MIPS assembler in LLVM.
   Every file mentioned in this section assumes that the current working directory is \\
   /llvm-project/llvm/lib/Target/Mips/ 

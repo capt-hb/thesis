@@ -1,4 +1,5 @@
 * CLang Exploration
+  <<sec:clang>>
   Due to the time restrictions of the master thesis I was unable to modify the CLang/LLVM compiler.
   As an alternative, this section will describe the foreseen modifications that will need to
   be made in the compiler. This section should thus be seen as an exploration of the modifications

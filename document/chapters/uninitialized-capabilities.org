@@ -1,4 +1,5 @@
 * Uninitialized Capabilities
+  <<sec:uninit-caps>>
   Uninitialized capabilities are a new type of capabilities. They are memory capabilities which 
   represent read-write authority to a range of memory, except that they do not allow reading the 
   initial contents of the memory. The memory first needs to be overwritten before it can be read.
@@ -31,8 +32,8 @@
   - *RWX*: read, write, execute.
   - *RWLX*: read, write-local, execute.
   - *RWL*: read, write-local;
-  - *U*: read between $[cursor, end]$, write between $[base, end]$;
-  - *UL*: read between $[cursor, end]$, write-local between $[base, end]$;
+  - *URW*: read between $[cursor, end]$, write between $[base, end]$;
+  - *URWL*: read between $[cursor, end]$, write-local between $[base, end]$;
 
   Combinations of the *U* permission and *X* permission are invalid, executing an uninitialized 
   capabilities would require incrementing the program counter (and thus the cursor of the 

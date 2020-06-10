@@ -1,4 +1,5 @@
 * Evaluation
+  <<sec:evaluation>>
   Two kinds of evaluation were performed, the first one being the unit testing of instructions,
   for the modified and new instructions. The second evaluation is concerned with the new calling
   convention and how it compares to the calling convention currently in use on CHERI-MIPS.
@@ -408,7 +409,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |          205 |   1973.3115 |
-    | Secure       |          376 |   2687.4775 |
+    | Secure             |          380 |   2687.4775 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:slow-factorial}.
@@ -492,7 +493,7 @@
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
     | Original           |           87 |   1271.4220 |
-    | Secure             |          214 |   1478.8585 |
+    | Secure             |          218 |   1478.8585 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth-O1}.

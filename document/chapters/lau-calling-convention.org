@@ -8,8 +8,22 @@
   
   An important requirement for this calling convention is that the stack capability is a local
   capability with the *RWLX* permission.
+
+  The calling convention aims to have the well-bracketed control flow and local state encapsulation
+  properties. These are defined as:
+  #+begin_quote
+  Well-bracketed control flow (WBCF) expresses that invoked functions must either return to their
+  callers, invoke other functions themselves or diverge, and generally holds in programming
+  languages that do not offer a primitive form of continuations \parencite{skorstengaard2019stktokens}.
+  #+end_quote
+  #+begin_quote
+  Local state encapsulation (LSE) is the guarantee that when a function invokes another function,
+  its local variables (saved on its stack frame) will not be read or modified until the invoked
+  function returns \parencite{skorstengaard2019stktokens}.
+  #+end_quote
   
 ** Invoking A Function
+   <<sec:lau-cc-invoking>>
    The first thing to do is to save the used caller-saved registers on the stack.    
 
    As a return capability for the callee we need to create an enter capability (a permissions that
@@ -52,12 +66,15 @@
    continue by restoring caller-saved registers.
 
 ** Function Prologue
-   # all non-argument registers are cleared, so nothing left to spill when jumping to a function?
-   # (return/stack cap are spilled as part of the "Invoking a Function" process)
+   <<sec:lau-cc-prologue>>
    The callee needs to check that the stack capability is *RWLX*. The necessary stack setup happens 
-   by the caller instead of by the callee.\todo{is there a use for caller-callee-saved in a secure calling convention? you can mention the answer here}
+   by the caller instead of by the callee. There are no more callee-saved registers, because all
+   non-argument registers are cleared, if the caller still needs the contents of some non-argument
+   register than the caller should save them, i.e. all registers can be regarded as caller-saved
+   registers.
 
 ** Function Epilogue
+   <<sec:lau-cc-epilogue>>
    The following steps should be taken before jumping to the return capability:
    - clear the non-return value registers;
    - clear the used part of the stack (spilled registers, local state from invoking other functions, ...);
