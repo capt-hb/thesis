@@ -81,7 +81,13 @@
 ** Function Prologue
    The function prologue is no longer required to decrement the offset of the stack capability,
    or preserve callee-saved registers (non-argument registers are cleared before the function
-   is invoked). It might be necessary to spill /$c1/ and /$c2/ to the stack, these are the registers
+   is invoked). 
+   The prologue should check that the available stack capability has the right permissions. This
+   can be implemented by emitting the machine instructions, i.e. the assembly code, of Section [[sec:secure-cc-prologue]].
+   Alternative a pseudo instruction could be defined that represents the instruction sequence to
+   check the stack capability. The function prologue will only have to emit this pseudo instruction
+   at the beginning of the function then.
+   It might be necessary to spill /$c1/ and /$c2/ to the stack, these are the registers
    containing the return capability and stack capability, these will be needed to return to the caller.
    
    These modifications need to be made in /MipsSEFrameLowering.cpp/, in the /emitPrologue/ function.

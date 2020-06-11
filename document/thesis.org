@@ -46,13 +46,13 @@
 #+INCLUDE: ./chapters/background.org :minlevel 1
 
 \newpage
-#+INCLUDE: ./chapters/literature-review.org :minlevel 1
+#+INCLUDE: ./chapters/related-work.org :minlevel 1
 
 \newpage
 #+INCLUDE: ./chapters/uninitialized-capabilities.org :minlevel 1
 
 \newpage
-#+INCLUDE: ./chapters/uninit-calling-convention.org :minlevel 1
+#+INCLUDE: ./chapters/secure-calling-convention.org :minlevel 1
 
 \newpage
 #+INCLUDE: ./chapters/assembler.org :minlevel 1
@@ -64,7 +64,7 @@
 #+INCLUDE: ./chapters/clang-exploration.org :minlevel 1
   
 \newpage
-#+INCLUDE: ./chapters/conclusion.org :minlevel 1
+#+INCLUDE: ./chapters/conclusions.org :minlevel 1
 
 \newpage
 \printbibliography

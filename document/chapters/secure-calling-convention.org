@@ -254,6 +254,7 @@
    in register /$c2/. 
 
 ** Function Prologue
+   <<sec:secure-cc-prologue>>
    The stack setup happens before the function invocation by the caller, no additional 
    processing is required in the function prologue except for checking that the stack capability
    has the *URWL* permissions. 

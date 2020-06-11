@@ -219,8 +219,8 @@
     |--------------------+--------------+-------------|
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
-    | Original           |           39 |    916.1925 |
-    | Secure             |           59 |    967.5120 |
+    | Original           |           39 |    942.2315 |
+    | Secure             |           66 |    982.0340 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:simple-call}.
@@ -231,7 +231,8 @@
     \FloatBarrier
     
     From this boxplot and the table above we can conclude that the new calling convention is slower
-    than the original calling convention, which was expected. 
+    than the original calling convention, which was expected, but not much slower, the overhead
+    is acceptable. 
     
 *** Stack Growth
     This program has a function that calls another function, requires spilling arguments
@@ -299,8 +300,8 @@
     |--------------------+--------------+-------------|
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
-    | Original           |          393 |   1743.6945 |
-    | Secure             |          607 |   2296.3740 |
+    | Original           |          393 |   1752.0225 |
+    | Secure             |          647 |   2347.0310 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth}.
@@ -333,8 +334,8 @@
     |--------------------+--------------+-------------|
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
-    | Original           |           88 |    940.3005 |
-    | Secure             |          162 |   1070.9105 |
+    | Original           |           88 |    936.3010 |
+    | Secure             |          196 |   1097.5060 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth-O1}.
@@ -344,7 +345,7 @@
     [[../../figures/boxplot-stack-growth-O1.png]]
     \FloatBarrier
 
-    Even though the number of instructions almost doubled, the performance isn't that much
+    Even though the number of instructions doubled, the performance isn't that much
     affected. This is because some of the stack clearing instructions have been removed due
     to smaller stack frames of individual functions (smaller stack frames require less clearing
     before returning to the caller of the function).
@@ -408,8 +409,8 @@
     |--------------------+--------------+-------------|
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
-    | Original           |          205 |   1973.3115 |
-    | Secure             |          380 |   2687.4775 |
+    | Original           |          205 |   1977.5115 |
+    | Secure             |          412 |   2802.7360 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:slow-factorial}.
@@ -420,7 +421,7 @@
     \FloatBarrier
     
     The results from this evaluation are similar to the previous ones. There number of instructions
-    has almost doubled and the overhead introduced by the secure calling convention is visible
+    has doubled and the overhead introduced by the secure calling convention is visible
     in the execution time.
 
 *** Sums -O1
@@ -492,8 +493,8 @@
     |--------------------+--------------+-------------|
     | Calling Convention | Instructions | Performance |
     |--------------------+--------------+-------------|
-    | Original           |           87 |   1271.4220 |
-    | Secure             |          218 |   1478.8585 |
+    | Original           |           87 |   1292.1815 |
+    | Secure             |          250 |   1589.1595 |
     |--------------------+--------------+-------------|
     
     The performance is visualized using a box plot in Figure \ref{fig:stack-growth-O1}.
