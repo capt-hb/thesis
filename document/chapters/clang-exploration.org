@@ -6,9 +6,10 @@
   needed to implement the calling convention in the CLang/LLVM compiler.
   The files mentioned in this section are relative to the MIPS backend in the LLVM project,
   /llvm-project/llvm/lib/Target/Mips/.
-  Most of the subsections discussed here correspond to those defined in Chapter [[sec:secure-cc]].
+  Most of the subsections discussed here correspond to those defined in Section [[sec:secure-cc]].
   Note that some sequences of instructions could potentially be wrapped in pseudo instructions to
-  make it more clear what the intention is. For example, getting the unique seal requires quite
+  make it more clear what the intention is. For example, getting the unique seal from the
+  sealing capability requires quite
   a few instructions and it might be beneficial to wrap this in a pseudo instruction which takes
   a single argument in which the capability to use as a seal will be stored.
   
@@ -21,13 +22,13 @@
    convention corresponds with ~CallingConv::CHERI_PURECAP_UNINIT~.
    Alternatively, we could view the current calling convention as the new calling convention
    and alter the code with the modifications described below always taking place (i.e. the
-   calling convention is not chosen but is always used).
+   calling convention is always used).
 
 ** Store Instructions
    Stores using capabilities currently happen using the /CSX/ store instructions (those already
    provided by CHERI-MIPS before uninitialized capabilities were added). These instructions
    will now have to be the new store instructions (/UCSX/).
-   This change will also require that stores be done differenlty. Remember that the /CSX/ store
+   This change will also require that stores be done differently. The /CSX/ store
    instructions have no out register, but instead have another general-purpose register that
    is added to the offset of the capability. A concrete example involves writing to an address in an
    array:
@@ -61,12 +62,13 @@
    - Shrinking and uninitializing the stack capability;
    - Argument spilling (if necessary);
    - Creating the return capability and sealing it;
-   - Clearing registers.
+   - Clearing non-argument registers.
 
    After the capability jump node another node needs to be added to move the contents of the
    /IDC/ register to the capability stack register.
    One important requirement is that the stack capability should begin at an address that is
-   a multiple of 32, therefore it might be necessary to insert some store instructions if the
+   a multiple of 32, therefore it might be necessary to insert some store instructions before
+   shrinking and uninitializing the stack capability if the
    cursor of the stack capability is not currently a multiple of 32. These store instructions
    should write beneath the cursor (with an offset of -1) until the cursor is a multiple of 32.
    
@@ -76,7 +78,7 @@
    the return node is created. The return node created for the new calling convention needs
    to be a ~ccall~ return node. This selection DAG node still needs to be created, this is
    similar to the current jump nodes and can be done in /MipsInstrCheri.td/ (should be defined
-   near the ~CapJmpLink~ node definition, it concerns jumps).
+   near the ~CapJmpLink~ node definition, as it concerns jumps).
 
 ** Function Prologue
    The function prologue is no longer required to decrement the offset of the stack capability,
@@ -84,11 +86,11 @@
    is invoked). 
    The prologue should check that the available stack capability has the right permissions. This
    can be implemented by emitting the machine instructions, i.e. the assembly code, of Section [[sec:secure-cc-prologue]].
-   Alternative a pseudo instruction could be defined that represents the instruction sequence to
+   Alternatively a pseudo instruction could be defined that represents the instruction sequence to
    check the stack capability. The function prologue will only have to emit this pseudo instruction
    at the beginning of the function then.
    It might be necessary to spill /$c1/ and /$c2/ to the stack, these are the registers
-   containing the return capability and stack capability, these will be needed to return to the caller.
+   containing the return capability and the caller's stack capability, these will be needed to return to the caller.
    
    These modifications need to be made in /MipsSEFrameLowering.cpp/, in the /emitPrologue/ function.
 

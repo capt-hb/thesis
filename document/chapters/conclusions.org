@@ -1,12 +1,12 @@
 * Conclusions
   The semantics of the uninitialized capabilities were described at the beginning of the thesis.
-  After describing the semantics of unitialized capabilities, the ISA extension for uninitialized
+  After describing the semantics of uninitialized capabilities, the ISA extension for uninitialized
   capabilities was described. This ISA extension was then instantiated for CHERI-MIPS in software
   (using a simulator). Uninitialized capabilities have not been added in hardware and is out of the
   scope if this thesis. I do believe it should be possible to implement them in hardware, the
-  reasoning behind this is that unitialized capabilities only require one bit to indicate if a
+  reasoning behind this is that uninitialized capabilities only require one bit to indicate if a
   capability is uninitialized or not, and there are some padding bits available in the 256-bit
-  capability format. Other formats should be possible to but are more complicated due to the
+  capability format. Other formats should be possible too but are more complicated due to the
   compression techniques used. The instruction modifications and new instructions seem plausible in
   hardware, they have existing counterparts (the normal store instructions and set bounds
   instruction) and because these could be implemented in hardware, it seems safe to say that the
@@ -15,13 +15,13 @@
   A modified version of the calling convention with local capabilities, using uninitialized
   capabilities as well, is described in detail. This calling convention is more secure than existing
   alternatives but at the cost of some overhead due to stack and register clearing requirements.
-  The assembler of the LLVM project (for the MIPS backend) was modified to support the uninitialized
+  The assembler of the LLVM project, for the MIPS backend, was modified to support the uninitialized
   capability instructions. The assembler was then used to evaluate the instructions and the secure
   calling convention.
 
   In this evaluation the difference in the number of instructions for the original and secure
   calling convention for a few example programs was discussed. This discussion lead to the
-  observation the using the secure calling convention doubles the number of instructions. The
+  observation that using the secure calling convention doubles the number of instructions. The
   execution time for the example programs was measured and the secure calling convention is slower
   due to its overhead by clearing registers and having functions clear their stack frames before
   returning to their caller. The register clearing could be faster in future implementations of

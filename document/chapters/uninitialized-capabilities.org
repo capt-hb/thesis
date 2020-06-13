@@ -106,8 +106,8 @@
     can then be set to 0 (i.e. indicating the capability is uninitialized) by having the corresponding
     bit in the general-purpose be zero. This implementation choice is used for local capabilities,
     capabilities are local if the /global/ bit is unset.
-    In this thesis the choice was made to use separate instructions for the unitialized bit,
-    otherwise every occurence of the existing /CAndPerm/ instructions needs to be updated to make 
+    In this thesis the choice was made to use separate instructions for the uninitialized bit,
+    otherwise every occurrence of the existing /CAndPerm/ instructions needs to be updated to make 
     sure that initialized capabilities remain initialized.
 
     \bigskip
@@ -117,7 +117,7 @@
     of the capability has been written to. That means that if no uninitialized contents resides
     in the range of an uninitialized capability, then it is safe to drop the uninitialized
     permission of the capability. Using this instruction an uninitialized capability for an initialized
-    array or struct can be converted into a capability without the unitialized bit set, which allows
+    array or struct can be converted into a capability without the uninitialized bit set, which allows
     using negative increments for the offset (for example to loop with a pointer over an array starting
     from the end of the array towards the base of the array, which is not possible with uninitialized
     capabilities).

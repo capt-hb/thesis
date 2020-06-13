@@ -58,7 +58,7 @@
    The calling convention is similar to standard C calling conventions, so it is safe to assume
    that much like other calling conventions the first $x$ arguments are passed in registers and
    the remaining arguments are passed on the stack.
-   This part of the calling convention relies on the processor on which it is used. 
+   This part of the calling convention depends on the processor on which it is used. 
 
 ** Returning From A Function
    Returning from a function happens by jumping to the return capability. This return capability

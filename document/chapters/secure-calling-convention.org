@@ -1,6 +1,6 @@
 * Secure Calling Convention 
   <<sec:secure-cc>>
-  Now that the concrete ISA extension for uninitialized capabilites has been proposed for CHERI-MIPS,
+  Now that the concrete ISA extension for uninitialized capabilities has been proposed for CHERI-MIPS,
   we can take a look at the second contribution of this thesis: a secure calling convention for CHERI
   that uses local and uninitialized capabilities.
 
@@ -60,7 +60,7 @@
   The unique seal (the callee can never reconstruct
   the seal) will prohibit adversaries from constructing capabilities with the same seal, in an
   attempt to supply a different stack capability or return capability. 
-  The sealing requirement of the return and stack capability can be fullfilled 
+  The sealing requirement of the return and stack capability can be fulfilled 
   by using the CCall instruction (described in Section [[sec:cheri-sealed-capabilities]]).
   It is not necessary to be able to unseal the pair, i.e. the return and stack capability,
   (the ccall instruction will do this if the seals of the sealed capability pair is the same). 
@@ -131,7 +131,7 @@
    original CHERI calling convention.
    One important caveat is that stack frames should begin at addresses that are multiples of 32,
    because capabilities can only be stored in memory at addresses that are multiples of 32. If stack 
-   frames could begin at any possible address there would be extra overhead everytime bytes need to 
+   frames could begin at any possible address there would be extra overhead every time bytes need to 
    be stored to memory that need to be alignment (for example capabilities need to be stored at 
    addresses that are a multiple of 32), due to adding instructions that would need to check if the 
    alignment rule is being followed and if not write some zeroes first.

@@ -6,7 +6,7 @@
   range of authority of the capability). While capability machines were an active topic of research
   decades ago \parencite{levy2014capability}, the research interest into capability machines has
   grown again by merit of a recently developed capability machine, CHERI
-  \parencite{watson2019capability}. One of the biggest interests in capability stems from the
+  \parencite{watson2019capability}. One of the biggest interests in capability machines stems from the
   security primitives they offer. Because capabilities have permissions and a range of authority,
   they seem promising to improve the security of processors and operating systems. There have been
   two recent proposals for alternative calling conventions that are more secure, one using local
@@ -63,7 +63,7 @@
   convention in the CLang/LLVM compiler. This exploration outlines the different parts of the
   compiler that need to be modified to use the new calling convention. This was not implemented due
   to time restrictions but the exploration will surely be useful for future work that implements
-  this calling convention or a new calling convention needs to be added in the CLang/LLVM compiler.
+  this calling convention or when a new calling convention needs to be added in the CLang/LLVM compiler.
 
   The calling convention is successfully implemented on CHERI-MIPS by manually modifying assembly
   programs. There is still some overhead due to clearing the stack frames of functions, but this
@@ -73,7 +73,7 @@
   implementation remains to be done in future work.
 
   The results of this thesis are also part of a paper that will be submitted to
-  POPL21[fn:popl21]. This paper is the result of a collaboration between the Vrije Universeit
+  POPL21[fn:popl21]. This paper is the result of a collaboration between the Vrije Universiteit
   Brussel and Aarhus University, Denmark. The paper describes uninitialized capabilities and the
   calling convention on a different capability machine (simpler than CHERI and it has enter
   capabilities). The paper theoretically underpins the calling convention and its guarantees 

@@ -3,8 +3,8 @@
   This section will describe the modifications made to the CHERI-MIPS assembler in LLVM.
   Every file mentioned in this section assumes that the current working directory is \\
   /llvm-project/llvm/lib/Target/Mips/ 
-  (where llvm-project is the root directory of the repository), unless specified otherwise.
-  The assembler will be used in the evaluation section.
+  (where llvm-project is the root directory of the LLVM repository), unless specified otherwise.
+  The assembler will be used later on in the evaluation section.
   
   \bigskip
 
@@ -39,7 +39,7 @@
   This intrinsic specifies that the instruction takes one general purpose out register and one
   capability in register, it also mentions that the instruction does not access memory.
   The /CUninit/ definition specifies
-  that is a definition for a /CheriFmt2Op/ (cheri format for a 2 operands instruction) record, 
+  that it is an instance for a /CheriFmt2Op/ (cheri format for a 2 operands instruction) record, 
   with as value for the func field 0x1b. It has 
   one out register, /$r1/ and one in register /$r2/. The assembly format is specified next, followed
   by some intrinsics about the registers. The first intrinsic specifies that /$r1/ will be set

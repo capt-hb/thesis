@@ -47,14 +47,15 @@
 ** Argument Passing
    # NOTE: the calling conv is CC_MipsN (cc_mipsn_fast starts with $c1, but the first cap arg
    # is passed in $c3, see stack_growth.s)
-   The argument passing follows the MIPS calling convention rules, in which the first eight integer
-   arguments are passed in the registers $4-11. The first eight capability arguments are passed in 
+   Argument passing follows the MIPS calling convention rules, in which the first eight integer
+   arguments are passed in the registers $4-11. Additionally, the first eight capability arguments are passed in 
    registers $c3-10. All other arguments are passed on the stack.
    
 ** Returning From A Function
    In order to return from a function a jump instruction is used with as operand a capability
-   to return to. For CHERI-MIPS this is the /CJR/ instruction (jump capability register) and
-   the capability to return to is in capability register 17 (/$c17/).
+   to return to. For CHERI-MIPS this is the /CJR/ instruction (jump capability register) and by
+   convention the capability to return to is in capability register 17 (/$c17/), i.e. the full
+   instruction to return to the caller looks like ~cjr $c17~.
    
 ** Function Prologue
    The function prologue describes what needs to happen at the beginning of a function.

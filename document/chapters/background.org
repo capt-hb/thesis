@@ -10,7 +10,7 @@
    capabilities represent software defined authority like invoking objects or closures, they are
    referred to as /object capabilities/.
    This thesis will focus on primitive capabilities for accessing memory.
-   The permissions to access memory can be read only, read only and write to, execute, ... 
+   The permissions to access memory can be read only, read and write to, execute, ... 
    The idea of capabilities was first formally defined by Dennis and Van Horn \parencite{dennis1966programming} 
    and has been further explored in the decades after. 
 
@@ -76,7 +76,7 @@
    this thesis will focus on the 256-bit capability format but the ideas and concepts represented
    in the thesis should be applicable to the other capability formats as well.
    
-   Figure \ref{fig:uninit-cap-concept} shows the current 256-bit capability format.
+   Figure \ref{fig:cap-representation} shows the current 256-bit capability format.
 
    #+CAPTION: 256-bit Capability Representation Format
    #+ATTR_LATEX: :width 0.8\textwidth
@@ -98,7 +98,8 @@
     
     Unsealed capabilities have an /otype/ (see Figure \ref{fig:cap-representation}) of -1, which is
     the default for all capabilities. A capability can be sealed by using the /CSeal/ instruction,
-    which is of the form: ~cseal cd, cb, ct~. $cb$ contains the capability to be sealed and the
+    which is of the form: ~cseal cd, cb, ct~. Capability register $cb$ contains the capability to 
+    be sealed and the
     sealed capability will be written to $cd$. The seal itself is taken from the capability residing
     in $ct$ (which needs to have the ~Permit_Seal~ permission) more specifically, the 24 least significant bits 
     of the cursor of $ct$.

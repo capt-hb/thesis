@@ -26,7 +26,7 @@
   \parencite{nienhuis2019rigorous}.
 
   CHERI aims to provide fine-grained memory protection, highly scalable software
-  compartmentalization and backwards compability. A prototype CHERI-MIPS processor has been
+  compartmentalization and backwards compatibility. A prototype CHERI-MIPS processor has been
   developed and proposals have been made to add the CHERI ISA extension for the x86-64 ISA
   (CHERI-x86-64) and RISC-V ISA (CHERI-RISC-V). This capability machine uses tagging to identify
   capabilities by having a tag for each capability-sized, capability-aligned word in primary
