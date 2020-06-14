@@ -58,7 +58,7 @@
     the write permission. 
     The new kind of capability is the /local/ capability, which
     behaves different for storing local capabilities. Local capabilities can only be stored
-    into memory by using a capability that is local itself and has the write-local permission \parencite[sec~2.3.10]{watson2019capability}.
+    into memory by using a capability that is local itself and has the write-local permission \parencite[Section~2.3.10]{watson2019capability}.
 
 *** Sealed Capabilities
     <<sec:sealed-capabilities>>
