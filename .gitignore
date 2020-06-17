@@ -1,7 +1,9 @@
 *~
+document/thesis.pdf
+presentations/*.pdf
+technical-report/*.pdf
 environment/env
 sources
-*.pdf
 c_files/.idea
 c_files/*.s
 c_files/*.ll
