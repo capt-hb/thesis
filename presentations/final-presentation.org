@@ -1,0 +1,20 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:2 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:nil e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:nil title:t toc:nil todo:t |:t
+#+TITLE: Secure Calling Convention with Uninitialized Capabilities
+#+DATE: 04-12-19
+#+AUTHOR: Sander Huyghebaert \linebreak Promotor: Prof. Dr. Dominique Devriese \linebreak Supervisor: Thomas Van Strydonck \linebreak Supervisor: Dr. Steven Keuchel
+#+EMAIL: sander.huyghebaert@vub.be
+#+DESCRIPTION: Final Thesis Presentation
+#+LATEX_CLASS: beamer
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{color}
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.1.9)
+# No Navigation Symbols
+#+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
+#+BEAMER_HEADER: \usetheme[coloredtitles]{vub}
