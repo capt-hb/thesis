@@ -18,3 +18,59 @@
 # No Navigation Symbols
 #+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
 #+BEAMER_HEADER: \usetheme[coloredtitles]{vub}
+#+MACRO: subtitle #+BEAMER: \framesubtitle{$1}
+
+* Introduction
+** Pointers
+   # Reuse CC example of previous presentation
+
+** Capability Machines
+   
+** CHERI
+   
+# Explain concepts used throughout thesis (for CCs)
+** Well-Bracketed Control Flow
+   
+** Local State Encapsulation
+   
+* Calling Convention
+** CHERI-MIPS Calling Convention
+   
+** Calling Convention with Local Capabilities
+   # Cite Lau's paper
+   # WBCF & LSE
+   # Open problem => stack clearing
+   # First attempt => linear caps (small description, hardware limitation)
+   
+* Uninitialized Capabilities
+** Uninitialized Capabilities
+   {{{subtitle(Concept)}}}
+   # Reflects stack growth
+   # Small example of writes (i.e. cursor movement, permission regions update)
+   
+** Uninitialized Capabilities
+   {{{subtitle(Implementation Overview)}}}
+   
+* Secure Calling Convention
+** Calling Convention with Uninitialized Capabilities
+  # Based on cc with local caps
+  # Example (reuse, but better align, figures of previous presentation)
+  # WBCF & LSE
+  
+* Assembler
+** Assembler
+   
+* Evaluation
+** Evaluation
+   {{{subtitle(Setup)}}}
+
+** Evaluation
+   {{{subtitle(Experiments)}}}
+   
+** Evaluation
+   {{{subtitle(Results)}}}
+   
+* Future Work
+** Future Work 
+   {{{subtitle(CLang/LLVM)}}}
+   # CLang Exploration provided in thesis (don't go into detail, very technical)
