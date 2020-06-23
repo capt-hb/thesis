@@ -23,7 +23,33 @@
 
 * Introduction
 ** Pointers
-   # Reuse CC example of previous presentation
+   #+ATTR_LATEX: :width 0.5\textwidth
+   [[../figures/pointer.png]]
+
+   # Mention "undefined behavior" in C spec for pointers
+   - No Bounds
+   - No Permissions
+     
+** Calling Convention with Pointers
+   # TODO: better align figures (easier transitioning of slides) -> draw.io
+   #+CAPTION: Stack at some point of a program
+   #+ATTR_LATEX: :width 0.3\textwidth
+   [[../figures/pointer-secret-on-stack-1.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Stack after calling a function 
+   #+ATTR_LATEX: :width 0.6\textwidth
+   [[../figures/pointer-secret-on-stack-init.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Callee returns
+   #+ATTR_LATEX: :width 0.35\textwidth
+   [[../figures/pointer-secret-on-stack-1.png]]
+
+** Calling Convention with Pointers
+   #+CAPTION: Caller invokes untrusted function
+   #+ATTR_LATEX: :width 0.35\textwidth
+   [[../figures/pointer-secret-on-stack-sp-secret.png]]
 
 ** Capability Machines
    
