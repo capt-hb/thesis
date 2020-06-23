@@ -52,6 +52,12 @@
    [[../figures/pointer-secret-on-stack-sp-secret.png]]
 
 ** Capability Machines
+   #+CAPTION: Capability for a region of memory
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/capability.png]]
+   
+   - Bounds
+   - Permissions
    
 ** CHERI
    
