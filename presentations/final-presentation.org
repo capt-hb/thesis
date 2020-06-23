@@ -18,6 +18,7 @@
 # No Navigation Symbols
 #+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
 #+BEAMER_HEADER: \usetheme[coloredtitles]{vub}
+#+BEAMER_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Outline}\tableofcontents[currentsection]\end{frame}}
 #+MACRO: subtitle #+BEAMER: \framesubtitle{$1}
 
 * Introduction
