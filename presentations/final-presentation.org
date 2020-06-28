@@ -78,14 +78,26 @@
 ** Well-Bracketed Control Flow
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-3.png]]
+
 ** Well-Bracketed Control Flow
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-4.png]]
+
 ** Well-Bracketed Control Flow
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-5.png]]
    
 ** Local State Encapsulation
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/lse-1.png]]
+
+** Local State Encapsulation
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/lse-2.png]]
+
+** Local State Encapsulation
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/lse-3.png]]
    
 * Calling Convention
 ** CHERI-MIPS Calling Convention
