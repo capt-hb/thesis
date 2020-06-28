@@ -180,20 +180,35 @@
    
 * Evaluation
 ** Evaluation
+   {{{subtitle(Unit Testing Instructions)}}}
+   #+ATTR_LATEX: :width 0.9\textwidth
+   [[../figures/evaluation-unit-testing.png]]
+   # MENTION: simulator output file contains register dump
+
+** Evaluation
    {{{subtitle(Setup)}}}
    #+ATTR_LATEX: :width 0.9\textwidth
    [[../figures/evaluation-setup.png]]
 
 ** Evaluation
-   {{{subtitle(Setup)}}}
-   - Measure execution time
-   - Number of instructions
-
-** Evaluation
    {{{subtitle(Experiments)}}}
+   # MENTION: 3 with -O0, 2 with -O1
+   - 5 C Programs
+     + Function calls
+     + Arrays
+     + Pointer arithmetic
+   - Semantics Preserved
+   - Measure execution time 
+   # MENTION: can be extracted from simulator output file
+   - Number of instructions
    
 ** Evaluation
    {{{subtitle(Results)}}}
+   - Unit Tests Pass
+   - Semantics are preserved
+   - Overhead for /secure/ calling convention
+     + Expected, depends on stack frame sizes
+   - Number of instructions doubles for /secure/ calling convention
    
 * Future Work
 ** Future Work 
