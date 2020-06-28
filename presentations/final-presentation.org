@@ -68,6 +68,22 @@
    
 # Explain concepts used throughout thesis (for CCs)
 ** Well-Bracketed Control Flow
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/wbcf-1.png]]
+
+** Well-Bracketed Control Flow
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/wbcf-2.png]]
+
+** Well-Bracketed Control Flow
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/wbcf-3.png]]
+** Well-Bracketed Control Flow
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/wbcf-4.png]]
+** Well-Bracketed Control Flow
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/wbcf-5.png]]
    
 ** Local State Encapsulation
    
