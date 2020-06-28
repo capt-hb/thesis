@@ -174,11 +174,14 @@
   # Based on cc with local caps
   # Example (reuse, but better align, figures of previous presentation)
   # WBCF & LSE
-  
-* Assembler
-** Assembler
    
 * Evaluation
+** Evaluation
+   {{{subtitle(Assembler)}}}
+   - LLVM Assembler
+     - CHERI-MIPS Backend
+   - New instructions added
+
 ** Evaluation
    {{{subtitle(Unit Testing Instructions)}}}
    #+ATTR_LATEX: :width 0.9\textwidth
