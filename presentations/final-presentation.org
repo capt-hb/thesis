@@ -109,14 +109,16 @@
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/lse-3.png]]
    
-* Calling Convention
-** CHERI-MIPS Calling Convention
    
-** Calling Convention with Local Capabilities
-   # Cite Lau's paper
-   # WBCF & LSE
-   # Open problem => stack clearing
-   # First attempt => linear caps (small description, hardware limitation)
+# TODO: expand on these calling conventions if presentation doesn't hit 25 minutes mark
+# * Calling Convention
+# ** CHERI-MIPS Calling Convention
+   
+# ** Calling Convention with Local Capabilities
+# Cite Lau's paper
+# WBCF & LSE
+# Open problem => stack clearing
+# First attempt => linear caps (small description, hardware limitation)
    
 * Uninitialized Capabilities
 ** Uninitialized Capabilities
@@ -170,10 +172,43 @@
      # MENTION: what is it + implemented for technical reasons
    
 * Secure Calling Convention
-** Secure Calling Convention with Uninitialized Capabilities
-  # Based on cc with local caps
-  # Example (reuse, but better align, figures of previous presentation)
-  # WBCF & LSE
+** Secure Calling Convention 
+   # MENTION: briefly say what local caps are
+   - Based on Calling Convention with Local Capabilities
+     + Skorstengaard et al. (2018)
+   - Enforces Well-Bracketed Control Flow (WBCF)
+   - Enforces Local State Encapsulation
+
+** Secure Calling Convention 
+   {{{subtitle(Stack)}}}
+   #+ATTR_LATEX: :width 1.0\textwidth
+   [[../figures/cheri-uninit-stack.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Initial Stack)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secure-cc-explanation-1.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Function Invocation)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secure-cc-explanation-2.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Function Prologue)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secure-cc-explanation-3.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Function Epilogue)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secure-cc-explanation-4.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Function Epilogue)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secure-cc-explanation-5.png]]
    
 * Evaluation
 ** Evaluation
