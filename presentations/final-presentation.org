@@ -183,6 +183,7 @@
    {{{subtitle(Unit Testing Instructions)}}}
    #+ATTR_LATEX: :width 0.9\textwidth
    [[../figures/evaluation-unit-testing.png]]
+   # MENTION: uses CHERITest infrastructure
    # MENTION: simulator output file contains register dump
 
 ** Evaluation
