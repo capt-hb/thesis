@@ -194,7 +194,7 @@
 ** Evaluation
    {{{subtitle(Experiments)}}}
    # MENTION: 3 with -O0, 2 with -O1
-   - 5 C Programs
+   - C Programs
      + Function calls
      + Arrays
      + Pointer arithmetic
