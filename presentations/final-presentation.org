@@ -138,7 +138,36 @@
    [[../figures/uninit-cap-concept-v2-post-write.png]]
    
 ** Uninitialized Capabilities
-   {{{subtitle(Implementation Overview)}}}
+   {{{subtitle(Implementation Overview: Permission Bit)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/original-cap-representation.png]]
+
+** Uninitialized Capabilities
+   {{{subtitle(Implementation Overview: Permission Bit)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/uninit-cap-representation.png]]
+
+# TODO: if more time is left after practicing presentation, add some examples slides,
+#       for example for the "shrink a capability" instruction
+# TODO: showcase a store instruction? (sail code)
+** Uninitialized Capabilities
+   {{{subtitle(Implementation Overview: Instruction Modifications)}}}
+   - Load Instructions
+     + Uninitialized capabilities cannot load if $address < cursor$
+     + CL[BHWD][U], CLC
+   - Instructions that modify the cursor
+     + Only store right below cursor can modify the cursor of an uninitialized capability
+     + CSetOffset, CIncOffset, CSetAddr, CAndAddr
+
+** Uninitialized Capabilities
+   {{{subtitle(Implementation Overview: New Instructions)}}}
+   - Uninitialized Permission Bit
+     + Get, Set and Drop
+     # MENTION: what is the "drop" instr and why is it useful
+   - Uninitialized Store Instructions
+   - Shrink a Capability
+     # MENTION: what is it + implemented for technical reasons
    
 * Secure Calling Convention
 ** Calling Convention with Uninitialized Capabilities
