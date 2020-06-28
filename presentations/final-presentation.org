@@ -31,24 +31,23 @@
    - No Permissions
      
 ** Calling Convention with Pointers
-   # TODO: better align figures (easier transitioning of slides) -> draw.io
    #+CAPTION: Stack at some point of a program
-   #+ATTR_LATEX: :width 0.3\textwidth
+   #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-1.png]]
 
 ** Calling Convention with Pointers
    #+CAPTION: Stack after calling a function 
-   #+ATTR_LATEX: :width 0.6\textwidth
+   #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-init.png]]
 
 ** Calling Convention with Pointers
    #+CAPTION: Callee returns
-   #+ATTR_LATEX: :width 0.35\textwidth
+   #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-1.png]]
 
 ** Calling Convention with Pointers
    #+CAPTION: Caller invokes untrusted function
-   #+ATTR_LATEX: :width 0.35\textwidth
+   #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-sp-secret.png]]
 
 ** Capability Machines
@@ -60,6 +59,12 @@
    - Permissions
    
 ** CHERI
+   - Capability extension to Instruction Set Architectures
+   - Hardware implementation
+     + Capability instructions
+   - Backwards compatibility
+   - Software stack
+     + CLang/LLVM, CHERIBSD, QEMU Emulator
    
 # Explain concepts used throughout thesis (for CCs)
 ** Well-Bracketed Control Flow
