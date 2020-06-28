@@ -209,6 +209,35 @@
    {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.8\textwidth
    [[../figures/secure-cc-explanation-5.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Example with Adversary)}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secret-on-stack-1.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Example with Adversary)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secret-on-stack-init.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Example with Adversary)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secret-on-stack-1.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Example with Adversary)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secret-on-stack-cursor-pre-secret.png]]
+
+** Secure Calling Convention 
+   {{{subtitle(Example with Adversary)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.8\textwidth
+   [[../figures/secret-on-stack-cursor-post-secret.png]]
    
 * Evaluation
 ** Evaluation
