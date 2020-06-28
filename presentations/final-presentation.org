@@ -275,7 +275,7 @@
    - Unit Tests Pass
    - Semantics are preserved
    - Overhead for /secure/ calling convention
-     + Expected, depends on stack frame sizes
+     + Stack frame clearing, depends on stack frame sizes
    - Number of instructions doubles for /secure/ calling convention
    
 * Future Work
