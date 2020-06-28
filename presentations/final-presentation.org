@@ -20,6 +20,7 @@
 #+BEAMER_HEADER: \usetheme[coloredtitles]{vub}
 #+BEAMER_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Outline}\tableofcontents[currentsection]\end{frame}}
 #+MACRO: subtitle #+BEAMER: \framesubtitle{$1}
+#+MACRO: samepagenr #+BEAMER: \addtocounter{framenumber}{-1}
 
 * Introduction
 ** Pointers
@@ -36,16 +37,19 @@
    [[../figures/pointer-secret-on-stack-1.png]]
 
 ** Calling Convention with Pointers
+   {{{samepagenr}}}
    #+CAPTION: Stack after calling a function 
    #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-init.png]]
 
 ** Calling Convention with Pointers
+   {{{samepagenr}}}
    #+CAPTION: Callee returns
    #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-1.png]]
 
 ** Calling Convention with Pointers
+   {{{samepagenr}}}
    #+CAPTION: Caller invokes untrusted function
    #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-sp-secret.png]]
@@ -72,18 +76,22 @@
    [[../figures/wbcf-1.png]]
 
 ** Well-Bracketed Control Flow
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-2.png]]
 
 ** Well-Bracketed Control Flow
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-3.png]]
 
 ** Well-Bracketed Control Flow
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-4.png]]
 
 ** Well-Bracketed Control Flow
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/wbcf-5.png]]
    
@@ -92,10 +100,12 @@
    [[../figures/lse-1.png]]
 
 ** Local State Encapsulation
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/lse-2.png]]
 
 ** Local State Encapsulation
+   {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/lse-3.png]]
    
