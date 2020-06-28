@@ -170,7 +170,7 @@
      # MENTION: what is it + implemented for technical reasons
    
 * Secure Calling Convention
-** Calling Convention with Uninitialized Capabilities
+** Secure Calling Convention with Uninitialized Capabilities
   # Based on cc with local caps
   # Example (reuse, but better align, figures of previous presentation)
   # WBCF & LSE
@@ -181,6 +181,13 @@
 * Evaluation
 ** Evaluation
    {{{subtitle(Setup)}}}
+   #+ATTR_LATEX: :width 0.9\textwidth
+   [[../figures/evaluation-setup.png]]
+
+** Evaluation
+   {{{subtitle(Setup)}}}
+   - Measure execution time
+   - Number of instructions
 
 ** Evaluation
    {{{subtitle(Experiments)}}}
@@ -199,7 +206,7 @@
 ** Future Work 
    {{{subtitle(CLang/LLVM)}}}
    - Calling Convention currently not implemented in Clang/LLVM...
-   - ... but exploration of Clang/LLVM Compiler for calling convention provided in thesis
+   - ... but exploration of Clang/LLVM compiler for calling convention provided in thesis
    # CLang Exploration provided in thesis (don't go into detail, very technical)
 
 * Conclusions
@@ -211,5 +218,5 @@
    - Calling Convention
      + Enforces WBCF and LSE
      + Security comes at a cost (overhead)
-   - Exploration of Clang/LLVM
+   - Exploration of Clang/LLVM compiler
      + To implement new calling convention
