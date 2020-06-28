@@ -190,5 +190,26 @@
    
 * Future Work
 ** Future Work 
+   {{{subtitle(Hardware Implementation)}}}
+   - Should be possible
+     + Uninitialized Capabilities only require one extra bit
+     + New instructions similar to existing instructions
+   - Out of scope of thesis
+
+** Future Work 
    {{{subtitle(CLang/LLVM)}}}
+   - Calling Convention currently not implemented in Clang/LLVM...
+   - ... but exploration of Clang/LLVM Compiler for calling convention provided in thesis
    # CLang Exploration provided in thesis (don't go into detail, very technical)
+
+* Conclusions
+** Conclusions
+   - Uninitialized Capabilities
+     + Semantics
+     + ISA Extension
+       - Instantiated for CHERI-MIPS
+   - Calling Convention
+     + Enforces WBCF and LSE
+     + Security comes at a cost (overhead)
+   - Exploration of Clang/LLVM
+     + To implement new calling convention
