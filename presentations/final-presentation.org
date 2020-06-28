@@ -121,8 +121,21 @@
 * Uninitialized Capabilities
 ** Uninitialized Capabilities
    {{{subtitle(Concept)}}}
-   # Reflects stack growth
-   # Small example of writes (i.e. cursor movement, permission regions update)
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/uninit-cap-concept-v2.png]]
+   # MENTION: Reflects stack growth
+
+** Uninitialized Capabilities
+   {{{subtitle(Concept)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/uninit-cap-concept-v2-pre-write.png]]
+
+** Uninitialized Capabilities
+   {{{subtitle(Concept)}}}
+   {{{samepagenr}}}
+   #+ATTR_LATEX: :width 0.7\textwidth
+   [[../figures/uninit-cap-concept-v2-post-write.png]]
    
 ** Uninitialized Capabilities
    {{{subtitle(Implementation Overview)}}}
