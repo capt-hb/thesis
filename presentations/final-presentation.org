@@ -187,7 +187,7 @@
    # MENTION: simulator output file contains register dump
 
 ** Evaluation
-   {{{subtitle(Setup)}}}
+   {{{subtitle(Calling Convention)}}}
    #+ATTR_LATEX: :width 0.9\textwidth
    [[../figures/evaluation-setup.png]]
 
