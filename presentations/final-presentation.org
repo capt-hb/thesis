@@ -54,6 +54,8 @@
    #+ATTR_LATEX: :width 0.65\textwidth
    [[../figures/pointer-secret-on-stack-sp-secret.png]]
 
+   
+# Research Training
 ** Capability Machines
    #+CAPTION: Capability for a region of memory
    #+ATTR_LATEX: :width 0.7\textwidth
@@ -69,7 +71,16 @@
    - Backwards compatibility
    - Software stack
      + CLang/LLVM, CHERIBSD, QEMU Emulator
-   
+       
+** Related Work
+   - Secure Calling Convention with Local Capabilities
+     + Skorstengaard et al. (2018)
+     + Enforces Well-Bracketed Control Flow (WBCF) and Local State Encapsulation (LSE)
+     + Clearing Requirement
+   - Secure Calling Convention With Linear Capabilities
+     + Skorstengaard et al. (2019)
+     + Difficult to implement in hardware
+       
 # Explain concepts used throughout thesis (for CCs)
 ** Well-Bracketed Control Flow
    #+ATTR_LATEX: :width 0.7\textwidth
@@ -108,7 +119,13 @@
    {{{samepagenr}}}
    #+ATTR_LATEX: :width 0.7\textwidth
    [[../figures/lse-3.png]]
-   
+
+** POPL21 Paper
+   - "Efficient and Provable Local Capability Revocation using Uninitialized Capabilities"
+   - Collaboration between VUB and Aarhus University (Denmark)
+   - Thesis Results Part of Paper
+       
+# End Research Training
    
 # TODO: expand on these calling conventions if presentation doesn't hit 25 minutes mark
 # * Calling Convention
