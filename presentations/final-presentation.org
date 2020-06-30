@@ -78,6 +78,7 @@
      + Clearing Requirement
    - Secure Calling Convention With Linear Capabilities
      + Skorstengaard et al. (2019)
+     + Enforces WBCF and LSE
      + Difficult to implement in hardware
        
 # Explain concepts used throughout thesis (for CCs)
@@ -175,7 +176,7 @@
      + Uninitialized capabilities cannot load if $address < cursor$
      + CL[BHWD][U], CLC
    - Instructions that modify the cursor
-     + Only store right below cursor can modify the cursor of an uninitialized capability
+     + Only store right below cursor can lower the cursor of an uninitialized capability
      + CSetOffset, CIncOffset, CSetAddr, CAndAddr
 
 ** Uninitialized Capabilities
