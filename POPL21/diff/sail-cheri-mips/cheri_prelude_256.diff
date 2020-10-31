@@ -1,0 +1,35 @@
+40c40,41
+<   padding                 : bits(8) ,
+---
+>   padding                 : bits(7) ,
+>   uninit		  : bool    ,
+64a66
+>   uninit = false,
+88a91
+>   uninit = false,
+116c119,120
+<     padding                    = capBits[255..248],
+---
+>     padding                    = capBits[255..249],
+>     uninit                     = capBits[248],
+167a172
+>       @ cap.uninit
+308a314,330
+> val uninitCap : Capability -> Capability
+> function uninitCap(cap) =
+>     { cap with uninit=true }
+> 
+> val capAddrReachedEnd : Capability -> bool
+> function capAddrReachedEnd(cap) =
+>     let top = cap.base + cap.length in
+>     (cap.address >=_u top) & (top >=_u cap.address)
+> 
+> val setCapLength: (Capability, bits(64)) -> (bool, Capability)
+> function setCapLength(cap, length) =
+>     (true, {cap with length = length})
+> 
+> val shrinkCap: (Capability, bits(64), bits(65)) -> (bool, Capability)
+> function shrinkCap(cap, base, address) =
+>     let length : bits(65) = address - (0b0 @ base) in
+>     (true, {cap with base = base, length = length[63..0]})
+\ No newline at end of file

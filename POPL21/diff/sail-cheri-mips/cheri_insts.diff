@@ -1,0 +1,228 @@
+121a122,196
+> union clause ast = CGetUninit : (regno, regno)
+> function clause execute (CGetUninit(rd, cb)) =
+> {
+>   checkCP2usable();
+>   let capVal = readCapReg(cb);
+>   wGPR(rd) = zero_extend(capVal.uninit);
+> }
+> 
+> union clause ast = CUninit : (regno, regno)
+> function clause execute (CUninit(cd, cb)) =
+> {
+>    checkCP2usable();
+>    let cap  = readCapReg(cb);
+>    if cap.sealed then
+>     raise_c2_exception(CapEx_SealViolation, cb)
+>    else if ~ (cap.permit_store & cap.permit_load & (cap.permit_store_cap | cap.permit_store_local_cap) & cap.permit_load_cap) then
+>     raise_c2_exception(CapEx_UninitViolation, cb)
+>    else
+>    {
+>     let newCap = uninitCap(cap);
+>     writeCapReg(cd, newCap)
+>    }
+> }
+> 
+> union clause ast = CShrink : (regno, regno, regno)
+> function clause execute (CShrink(cd, cb, rt)) =
+> {
+>     checkCP2usable();
+>     let cb_val = readCapReg(cb);
+>     let base = getCapBase(cb_val);
+>     let newBase = unsigned(rGPR(rt));
+>     let cursor = getCapCursor(cb_val);
+>     let top = getCapTop(cb_val);
+>     if cb_val.sealed then
+> 	raise_c2_exception(CapEx_SealViolation, cb)
+>     else if newBase < base then
+> 	raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if top < cursor then 
+> 	raise_c2_exception(CapEx_LengthViolation, cb)
+>     else
+>     {
+> 	let (success, newCap) = shrinkCap(cb_val, to_bits(64, newBase), to_bits(65, cursor));
+> 	if (success) then
+> 	   writeCapReg(cd, newCap)
+> 	else 
+> 	   writeCapReg(cd, unrepCap(newCap))
+>     }   
+> }
+> 
+> union clause ast = CShrinkImmediate : (regno, regno, bits(11))
+> function clause execute (CShrinkImmediate(cd, cb, imm)) =
+> {
+>     checkCP2usable();
+>     let cb_val = readCapReg(cb);
+>     let base = getCapBase(cb_val);
+>     let immU = unsigned(imm);
+>     let cursor = getCapCursor(cb_val);
+>     let top = getCapTop(cb_val);
+>     let newBase = base + immU;
+>     if cb_val.sealed then
+> 	raise_c2_exception(CapEx_SealViolation, cb)
+>     else if newBase < base then
+> 	raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if top < cursor then 
+> 	raise_c2_exception(CapEx_LengthViolation, cb)
+>     else
+>     {
+> 	let (success, newCap) = shrinkCap(cb_val, to_bits(64, newBase), to_bits(65, cursor));
+> 	if (success) then
+> 	   writeCapReg(cd, newCap)
+> 	else 
+> 	   writeCapReg(cd, unrepCap(newCap))
+>     }   
+> }
+> 
+406a482,483
+>   else if cb_val.tag & cb_val.uninit & rt_val[63] then // uninit: don't allow lowering cursor
+>     raise_c2_exception(CapEx_UninitViolation, cb)
+424a502,503
+>   else if cb_val.tag & cb_val.uninit & imm64[63] then // uninit: don't allow lowering cursor
+>     raise_c2_exception(CapEx_UninitViolation, cb)
+440a520
+>   let offset = getCapOffset(cb_val);
+442a523,524
+>   else if cb_val.tag & cb_val.uninit & (unsigned(rt_val) < offset) then // uninit: don't allow lowering cursor
+>     raise_c2_exception(CapEx_UninitViolation, cb)
+460a543,544
+>   else if cb_val.tag & cb_val.uninit & (rt_val <_u cb_val.address) then // uninit: don't allow setting address lower
+>     raise_c2_exception(CapEx_UninitViolation, cb)
+476a561
+>   let addr = cb_val.address;
+482,486c567,575
+<     let (representable, newCap) = setCapAddr(cb_val, newAddr);
+<     if representable then
+<         writeCapReg(cd, newCap)
+<     else
+<         writeCapReg(cd, unrepCap(newCap));
+---
+>     if cb_val.tag & cb_val.uninit & (newAddr <_u addr) then
+>       raise_c2_exception(CapEx_UninitViolation, cb)
+>     else {
+>       let (representable, newCap) = setCapAddr(cb_val, newAddr);
+>       if representable then
+> 	writeCapReg(cd, newCap)
+>       else
+> 	writeCapReg(cd, unrepCap(newCap));
+>     }
+1073a1163,1164
+>     else if cb_val.uninit & vAddr < cursor then
+>       raise_c2_exception(CapEx_UninitLoadViolation, cb)
+1199a1291,1382
+> union clause ast = UCStore : (regno, regno, regno, bits(8), WordType)
+> function clause execute (UCStore(cd, rs, cb, offset, width)) =
+> {
+>   checkCP2usable();
+>   let cb_val = readCapRegDDC(cb);
+>   if not (cb_val.tag) then
+>     raise_c2_exception(CapEx_TagViolation, cb)
+>   else if cb_val.sealed then
+>     raise_c2_exception(CapEx_SealViolation, cb)
+>   else if not (cb_val.permit_store) then
+>     raise_c2_exception(CapEx_PermitStoreViolation, cb)
+>   else
+>   {
+>     let size   = wordWidthBytes(width);
+>     let cursor = getCapCursor(cb_val);
+>     let vAddr  = (cursor + size * signed(offset)) % pow2(64);
+>     let vAddr64= to_bits(64, vAddr);
+>     if (vAddr + size) > getCapTop(cb_val) then
+>       raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if vAddr < getCapBase(cb_val) then
+>       raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if not (isAddressAligned(vAddr64, width)) then
+>       SignalExceptionBadAddr(AdES, vAddr64)
+>     else
+>     {
+>       let pAddr  = TLBTranslate(vAddr64, StoreData);
+>       let rs_val = rGPR(rs);
+>       if cb_val.uninit & offset == ones() then { 
+> 	let decr = to_bits(64, negate(size));
+> 	let (_, newCap) = incCapOffset(cb_val, decr);
+> 	writeCapReg(cd, newCap)
+>       } else {
+> 	writeCapReg(cd, cb_val);
+>       };
+>       match width
+>       {
+>         B  => MEMw_wrapper(pAddr, 1) = rs_val[7..0],
+>         H  => MEMw_wrapper(pAddr, 2) = rs_val[15..0],
+>         W  => MEMw_wrapper(pAddr, 4) = rs_val[31..0],
+>         D  => MEMw_wrapper(pAddr, 8) = rs_val
+>       }
+>     }
+>   }
+> }
+> 
+> union clause ast = UCStoreCap : (regno, regno, regno, bits(11))
+> function clause execute (UCStoreCap(cd, cs, cb, offset)) =
+> {
+>   checkCP2usable();
+>   let cs_val = readCapReg(cs);
+>   let cb_val = readCapRegDDC(cb);
+>   if not (cb_val.tag) then
+>     raise_c2_exception(CapEx_TagViolation, cb)
+>   else if cb_val.sealed then
+>     raise_c2_exception(CapEx_SealViolation, cb)
+>   else if not (cb_val.permit_store) then
+>     raise_c2_exception(CapEx_PermitStoreViolation, cb)
+>   else if not (cb_val.permit_store_cap) then
+>     raise_c2_exception(CapEx_PermitStoreCapViolation, cb)
+>   else if not (cb_val.permit_store_local_cap) & (cs_val.tag) & not (cs_val.global) then
+>     raise_c2_exception(CapEx_PermitStoreLocalCapViolation, cb)
+>   else
+>   {
+>     let cursor  = getCapCursor(cb_val);
+>     let vAddr   = (cursor + cap_size * signed(offset)) % pow2(64);
+>     let vAddr64 = to_bits(64, vAddr);
+>     if (vAddr + cap_size) > getCapTop(cb_val) then
+>       raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if vAddr < getCapBase(cb_val) then
+>       raise_c2_exception(CapEx_LengthViolation, cb)
+>     else if (vAddr % cap_size) != 0 then
+>       SignalExceptionBadAddr(AdES, vAddr64)
+>     else
+>     {
+>       let (pAddr, macr) = TLBTranslateC(vAddr64, StoreData);
+>       let mtag : bool = match (if cs_val.tag == false then Unrestricted else macr) {
+>         Unrestricted => cs_val.tag,
+>         Clear => false,
+>         Trap  => raise_c2_exception(CapEx_TLBNoStoreCap, cs)
+>       };
+>       if cb_val.uninit & offset == ones() then { 
+>     	let decr = to_bits(64, negate(cap_size));
+> 	let (_, newCap) = incCapOffset(cb_val, decr);
+> 	writeCapReg(cd, newCap);
+>       } else {
+> 	writeCapReg(cd, cb_val);
+>       };
+>       MEMw_tagged(pAddr, cap_size, mtag, capToMemBits(cs_val))
+>     }
+>   }
+> }
+> 
+1343a1527,1528
+>     else if cb_val.uninit & vAddr < cursor then
+>       raise_c2_exception(CapEx_UninitLoadViolation, cb)
+1545a1731,1733
+> function clause decode (0b010010 @ 0b00000 @ cd : CapRegEnc @ cb : CapRegEnc @    0b11011 @ 0b111111) = Some(CUninit(cd, cb))
+> 
+> 
+1564a1753,1754
+> function clause decode (0b010010 @ 0b00000 @ rd : IntRegEnc @ cb : CapRegEnc @   0b10101 @ 0b111111) = Some(CGetUninit(rd, cb))
+> 
+1582a1773
+> function clause decode (0b010010 @ 0b00000 @ cd : CapRegEnc @ cb : CapRegEnc @ rt: IntRegEnc  @ 0b101100) = Some(CShrink(cd, cb, rt))
+1621a1813
+> 
+1623a1816
+> function clause decode (0b010010 @ 0b10111 @ cd : CapRegEnc @ cb : CapRegEnc @ imm : bits(11)) = Some(CShrinkImmediate(cd, cb, imm))
+1644a1838,1844
+> 
+> function clause decode (0b111011 @ cd : CapRegEnc @ rs : IntRegEnc @ cb : CapRegEnc @ offset : bits(8) @ 0b0 @ 0b00) = Some(UCStore(cd, rs, cb, offset, B)) /* UCSB */
+> function clause decode (0b111011 @ cd : CapRegEnc @ rs : IntRegEnc @ cb : CapRegEnc @ offset : bits(8) @ 0b0 @ 0b01) = Some(UCStore(cd, rs, cb, offset, H)) /* UCSH */
+> function clause decode (0b111011 @ cd : CapRegEnc @ rs : IntRegEnc @ cb : CapRegEnc @ offset : bits(8) @ 0b0 @ 0b10) = Some(UCStore(cd, rs, cb, offset, W)) /* UCSW */
+> function clause decode (0b111011 @ cd : CapRegEnc @ rs : IntRegEnc @ cb : CapRegEnc @ offset : bits(8) @ 0b0 @ 0b11) = Some(UCStore(cd, rs, cb, offset, D)) /* UCSD */
+> 
+> function clause decode (0b111101 @ cd : CapRegEnc @ cs : CapRegEnc @ cb : CapRegEnc @ offset : bits(11)) = Some(UCStoreCap(cd, cs, cb, offset))
