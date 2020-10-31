@@ -16,6 +16,8 @@ No password is requested upon starting the virtual machine, if needed however, t
 ## Contents
 
 This section gives an overview of the different projects that were modified to add uninitialized capabilities to the CHERI-MIPS ISA and to experiment and test the implementation of uninitialized capabilities and a novel calling convention that uses them.
+There are diff files available for the `sail-cheri-mips` and `llvm-project` projects in the `diff` directory of this artifact (i.e. where this README.md is also available). 
+Later in this document the modified files are given and described, the exact changes made can easily be viewed by consulting the corresponding diff file.
 
 ### sail-cheri-mips
 Location: `$HOME/Repositories/sail-cheri-mips`.
