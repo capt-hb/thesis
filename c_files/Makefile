@@ -1,7 +1,11 @@
 CHERI_SDK-=/home/cheri/sdk
-CFLAGS=-mcpu=beri -mabi=purecap -cheri-linker -cheri=256 -target cheri-unknown-freebsd -Wall -fomit-frame-pointer
+SYSROOT=$(CHERI_SDK)/sysroot256
+CFLAGS=-mcpu=beri -mabi=purecap -cheri=256 -target cheri-unknown-freebsd -Wall --sysroot $(SYSROOT)
 CLANG=$(CHERI_SDK)/bin/clang
 OPT=-O0
+
+%.o: %.c
+	$(CLANG) $< $(CFLAGS) $(OPT) -o $@
 
 %.s: %.c
 	$(CLANG) -S $< $(CFLAGS) $(OPT) -o $@
